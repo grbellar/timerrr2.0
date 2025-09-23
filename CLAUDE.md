@@ -42,10 +42,30 @@ This is a Flask web application using the Application Factory pattern with Bluep
 - CORS is enabled globally for all routes
 
 ### Current Endpoints
-- `/` - Main page serving the index template
+- `/` - Main page serving the index template (currently displays "Hello!")
+- `/timer` - Timer page for tracking time with running timer display
+- `/entries` - Time entries page for viewing and managing time logs
 - `/api/hello` - Sample JSON API endpoint
 
 ### Template System
 Templates use Jinja2 inheritance:
-- `base.html` defines the overall layout with navbar and footer
+- `base.html` - Defines the overall layout with responsive navigation header
+  - Uses Tailwind CSS via CDN for styling
+  - Inter font family from Google Fonts
+  - Mobile-responsive hamburger menu
+  - Navigation includes: Timer, Entries, Timesheets, Settings, Logout
 - Child templates extend base using `{% extends "base.html" %}` and override blocks
+  - `index.html` - Simple landing page
+  - `timer.html` - Time tracking interface with client name, timer display, description field, and clock out button
+  - `entries.html` - Time entries list with filters (date range, client selector) and entry management (edit/delete)
+
+### UI Framework & Styling
+- **Tailwind CSS** loaded via CDN (not compiled)
+- **Inter font** from Google Fonts
+- **Responsive design** with mobile-first approach
+- **Color scheme**: Gray-based with green/red accents for actions
+- **Container max-width**: `max-w-6xl`
+- **Common patterns**:
+  - White cards on gray-50 background
+  - Cards use: `bg-white rounded-lg shadow-sm border border-gray-200`
+  - Mobile-responsive flexbox layouts with `flex-col sm:flex-row`

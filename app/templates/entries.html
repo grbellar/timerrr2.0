@@ -16,31 +16,26 @@
             <!-- Date Inputs - Stack on mobile, inline on desktop -->
             <div class="flex flex-col sm:flex-row sm:items-center gap-3 flex-1">
                 <div class="flex items-center space-x-2 flex-1 sm:flex-initial">
-                    <input type="text" placeholder="mm/dd/yyyy"
+                    <input type="date" placeholder="mm/dd/yyyy"
                         class="flex-1 sm:flex-initial px-2.5 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm">
-                    <svg class="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
                 </div>
 
-                <span class="hidden sm:block text-gray-500 text-sm">-</span>
+                <span class="hidden sm:block text-gray-500 text-sm">to</span>
 
                 <div class="flex items-center space-x-2 flex-1 sm:flex-initial">
-                    <input type="text" placeholder="mm/dd/yyyy"
+                    <input type="date" placeholder="mm/dd/yyyy"
                         class="flex-1 sm:flex-initial px-2.5 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm">
-                    <svg class="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
                 </div>
-            </div>
 
-            <!-- Client Dropdown and Apply Button - Full width on mobile -->
-            <div class="flex gap-3">
                 <select class="flex-1 sm:flex-initial px-2.5 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-sm">
                     <option>All Clients</option>
                     <option>Client 1</option>
                     <option>Client 2</option>
                 </select>
+            </div>
+
+            <!-- Client Dropdown and Apply Button - Full width on mobile -->
+            <div class="flex gap-3">
 
                 <button class="px-4 py-1.5 bg-gray-900 hover:bg-gray-800 text-white rounded-md font-medium transition-colors text-sm">
                     Apply
@@ -57,13 +52,13 @@
                 <!-- Entry Details -->
                 <div class="flex-1">
                     <div class="flex items-center gap-3 mb-0.5">
-                        <h3 class="font-semibold text-sm sm:text-base">Client 1</h3>
+                        <h3 class="font-semibold text-sm sm:text-base">Planetary Talent</h3>
                         <div class="flex items-center gap-1.5">
                             <div class="w-2 h-2 bg-green-500 rounded-full"></div>
                             <span class="text-xs text-gray-500">Timer running</span>
                         </div>
                     </div>
-                    <div class="text-xs sm:text-sm text-gray-600">Client 1</div>
+                    <div class="text-xs sm:text-sm text-gray-600">Notes, descriptions, etc...</div>
                     <div class="text-xs text-gray-500 mt-0.5">9/20/2025 01:15 PM - 06:52 PM</div>
                 </div>
 
