@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block title %}Entries - timerrr{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
+    <!-- Page Title -->
+    <div class="mb-5 sm:mb-6">
+        <h1 class="text-xl sm:text-2xl font-semibold">Time Entries</h1>
+    </div>
+
+    <!-- Filters Section -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-5 mb-4 sm:mb-5">
+        <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+            <!-- Date Inputs - Stack on mobile, inline on desktop -->
+            <div class="flex flex-col sm:flex-row sm:items-center gap-3 flex-1">
+                <div class="flex items-center space-x-2 flex-1 sm:flex-initial">
+                    <input type="text" placeholder="mm/dd/yyyy"
+                        class="flex-1 sm:flex-initial px-2.5 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm">
+                    <svg class="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                </div>
+
+                <span class="hidden sm:block text-gray-500 text-sm">-</span>
+
+                <div class="flex items-center space-x-2 flex-1 sm:flex-initial">
+                    <input type="text" placeholder="mm/dd/yyyy"
+                        class="flex-1 sm:flex-initial px-2.5 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm">
+                    <svg class="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Client Dropdown and Apply Button - Full width on mobile -->
+            <div class="flex gap-3">
+                <select class="flex-1 sm:flex-initial px-2.5 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-sm">
+                    <option>All Clients</option>
+                    <option>Client 1</option>
+                    <option>Client 2</option>
+                </select>
+
+                <button class="px-4 py-1.5 bg-gray-900 hover:bg-gray-800 text-white rounded-md font-medium transition-colors text-sm">
+                    Apply
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Entries List -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+        <!-- Entry Item - Mobile optimized -->
+        <div class="p-4 sm:p-5 border-b border-gray-200 hover:bg-gray-50 transition-colors">
+            <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                <!-- Entry Details -->
+                <div class="flex-1">
+                    <div class="flex items-center space-x-2 mb-0.5">
+                        <h3 class="font-semibold text-sm sm:text-base">Client 1</h3>
+                    </div>
+                    <div class="text-xs sm:text-sm text-gray-600">Client 1</div>
+                    <div class="text-xs text-gray-500 mt-0.5">9/20/2025 01:15 PM - 06:52 PM</div>
+                </div>
+
+                <!-- Time and Actions - Stack on mobile -->
+                <div class="flex flex-row items-center justify-between sm:flex-col sm:items-end gap-2 sm:gap-3">
+                    <div class="text-lg sm:text-xl font-semibold order-1 sm:order-none">53:36:28</div>
+                    <div class="flex items-center space-x-3 sm:space-x-2 order-2 sm:order-none">
+                        <button class="text-blue-600 hover:text-blue-700 text-xs sm:text-sm font-medium">Edit</button>
+                        <button class="text-red-600 hover:text-red-700 text-xs sm:text-sm font-medium">Delete</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
