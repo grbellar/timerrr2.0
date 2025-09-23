@@ -15,6 +15,14 @@ def timer():
 def entries():
     return render_template('entries.html')
 
+@main.route('/timesheets')
+def timesheets():
+    return render_template('timesheets.html')
+
+@main.route('/settings')
+def settings():
+    return render_template('settings.html')
+
 @main.route('/api/hello')
 def api_hello():
     return {'message': 'Flask API is running!'}
