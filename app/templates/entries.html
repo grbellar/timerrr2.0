@@ -3,10 +3,11 @@
 {% block title %}Entries - timerrr{% endblock %}
 
 {% block content %}
-<div class="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
+<div class="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
     <!-- Page Title -->
     <div class="mb-5 sm:mb-6">
-        <h1 class="text-xl sm:text-2xl font-semibold">Time Entries</h1>
+        <h1 class="text-xl sm:text-2xl font-semibold mb-1">Time Entries</h1>
+        <p class="text-sm text-gray-600">View your time entries and make edits as needed.</p>
     </div>
 
     <!-- Filters Section -->
@@ -55,8 +56,12 @@
             <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
                 <!-- Entry Details -->
                 <div class="flex-1">
-                    <div class="flex items-center space-x-2 mb-0.5">
+                    <div class="flex items-center gap-3 mb-0.5">
                         <h3 class="font-semibold text-sm sm:text-base">Client 1</h3>
+                        <div class="flex items-center gap-1.5">
+                            <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                            <span class="text-xs text-gray-500">Timer running</span>
+                        </div>
                     </div>
                     <div class="text-xs sm:text-sm text-gray-600">Client 1</div>
                     <div class="text-xs text-gray-500 mt-0.5">9/20/2025 01:15 PM - 06:52 PM</div>

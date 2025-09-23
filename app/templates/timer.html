@@ -3,7 +3,7 @@
 {% block title %}Timer - timerrr{% endblock %}
 
 {% block content %}
-<div class="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
+<div class="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
     <!-- Page Title Section -->
     <div class="mb-5 sm:mb-6">
         <h1 class="text-xl sm:text-2xl font-semibold mb-1">Time Tracking</h1>
@@ -11,15 +11,27 @@
     </div>
 
     <!-- Timer Card -->
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-5 sm:p-6">
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5">
-            <div class="flex-1">
-                <h2 class="text-sm sm:text-base font-medium mb-2 sm:mb-3 text-gray-700">Client 1</h2>
-                <div class="text-3xl sm:text-4xl font-semibold tracking-wider">0:00:00</div>
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-5">
+        <div class="flex flex-col gap-2">
+            <!-- Top row: Client name and Timer -->
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                <div class="flex items-center gap-3">
+                    <h2 class="text-base font-medium text-gray-700">Planetary Talent</h2>
+                    <div class="flex items-center gap-1.5">
+                        <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                        <span class="text-sm text-gray-500">Timer running</span>
+                    </div>
+                </div>
+                <div class="text-2xl sm:text-3xl font-semibold">0:00:11</div>
             </div>
-            <div class="w-full sm:w-auto">
-                <button class="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white px-4 sm:px-5 py-2.5 rounded-lg font-medium transition-colors text-sm">
-                    Hold to clock in
+            <!-- Bottom row: Description and Button -->
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                <input type="text"
+                    value="Working on timesheet implementation"
+                    placeholder="What are you working on?"
+                    class="w-full sm:w-1/3 px-2.5 py-1.5 border border-gray-200 rounded-md text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-gray-50">
+                <button class="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white px-4 sm:px-5 py-2 rounded-lg font-medium transition-colors text-sm">
+                    Clock out
                 </button>
             </div>
         </div>

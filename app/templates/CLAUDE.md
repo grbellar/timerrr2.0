@@ -21,7 +21,7 @@ All pages extend this template using `{% extends "base.html" %}`.
 #### Header Specifications
 ```html
 <header class="bg-white border-b border-gray-200">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6">
     <div class="flex items-center justify-between h-14">
 ```
 - Height: `h-14` (56px)
@@ -36,9 +36,9 @@ All pages extend this template using `{% extends "base.html" %}`.
 
 ### Page Container Pattern
 ```html
-<div class="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
+<div class="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
 ```
-- Max width: `max-w-7xl`
+- Max width: `max-w-6xl`
 - Mobile padding: `px-4 py-6`
 - Desktop padding: `sm:px-6 sm:py-10`
 
@@ -154,7 +154,7 @@ Desktop: `sm:w-auto` (auto width)
 {% block title %}Page Name - timerrr{% endblock %}
 
 {% block content %}
-<div class="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
+<div class="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
     <!-- Page Title -->
     <div class="mb-5 sm:mb-6">
         <h1 class="text-xl sm:text-2xl font-semibold">Page Title</h1>
