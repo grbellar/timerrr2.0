@@ -26,12 +26,20 @@
         <h2 class="text-base font-semibold mb-4">Billing</h2>
         <div class="mb-4">
             <p class="text-sm text-gray-700">
-                <span class="font-medium">Current Plan:</span> Free
+                <span class="font-medium">Current Plan:</span> {{ current_user.tier.value }}
             </p>
         </div>
-        <button class="px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white rounded-md font-medium transition-colors text-sm">
+        {% if current_user.tier.value == 'Free' %}
+        <button id="upgrade-btn" onclick="upgradeToProStripe()"
+                class="px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white rounded-md font-medium transition-colors text-sm">
             Upgrade to Pro ($7/month)
         </button>
+        {% else %}
+        <button onclick="manageSubscription()"
+                class="px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white rounded-md font-medium transition-colors text-sm">
+            Manage Subscription
+        </button>
+        {% endif %}
     </div>
 
     <!-- Clients Section -->
@@ -281,6 +289,74 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+
+    // Check for success/error messages in URL params
+    const urlParams = new URLSearchParams(window.location.search);
+    const message = urlParams.get('message');
+    if (message) {
+        // Could show a toast or notification here
+        console.log('Message:', message);
+    }
 });
+
+async function upgradeToProStripe() {
+    const upgradeBtn = document.getElementById('upgrade-btn');
+    if (upgradeBtn) {
+        upgradeBtn.disabled = true;
+        upgradeBtn.textContent = 'Loading...';
+    }
+
+    try {
+        const response = await fetch('/api/stripe/create-checkout-session', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.checkout_url) {
+            // Redirect to Stripe Checkout
+            window.location.href = data.checkout_url;
+        } else {
+            alert(data.error || 'Failed to start checkout process');
+            if (upgradeBtn) {
+                upgradeBtn.disabled = false;
+                upgradeBtn.textContent = 'Upgrade to Pro ($7/month)';
+            }
+        }
+    } catch (error) {
+        console.error('Error creating checkout session:', error);
+        alert('An error occurred. Please try again.');
+        if (upgradeBtn) {
+            upgradeBtn.disabled = false;
+            upgradeBtn.textContent = 'Upgrade to Pro ($7/month)';
+        }
+    }
+}
+
+async function manageSubscription() {
+    try {
+        const response = await fetch('/api/stripe/customer-portal', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.portal_url) {
+            // Redirect to Stripe Customer Portal
+            window.location.href = data.portal_url;
+        } else {
+            alert(data.error || 'Failed to open subscription management');
+        }
+    } catch (error) {
+        console.error('Error opening customer portal:', error);
+        alert('An error occurred. Please try again.');
+    }
+}
 </script>
 {% endblock %}

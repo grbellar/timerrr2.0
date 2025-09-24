@@ -19,55 +19,62 @@
             <!-- Client Dropdown -->
             <div class="flex-1">
                 <label class="block text-xs sm:text-sm text-gray-500 mb-1">Client</label>
-                <select class="w-full px-2.5 py-1.5 border border-gray-300 rounded-md
+                <select id="client-select" class="w-full px-2.5 py-1.5 border border-gray-300 rounded-md
                                focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
                                bg-white text-sm">
-                    <option>Select a client</option>
-                    <option>Planetary Talent</option>
-                    <option>Client 1</option>
-                    <option>Client 2</option>
+                    <option value="">Select a client</option>
                 </select>
             </div>
 
             <!-- Month Dropdown -->
             <div class="flex-1">
                 <label class="block text-xs sm:text-sm text-gray-500 mb-1">Month</label>
-                <select class="w-full px-2.5 py-1.5 border border-gray-300 rounded-md
+                <select id="month-select" class="w-full px-2.5 py-1.5 border border-gray-300 rounded-md
                                focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
                                bg-white text-sm">
-                    <option>January</option>
-                    <option>February</option>
-                    <option>March</option>
-                    <option>April</option>
-                    <option>May</option>
-                    <option>June</option>
-                    <option>July</option>
-                    <option>August</option>
-                    <option selected>September</option>
-                    <option>October</option>
-                    <option>November</option>
-                    <option>December</option>
+                    <option value="1">January</option>
+                    <option value="2">February</option>
+                    <option value="3">March</option>
+                    <option value="4">April</option>
+                    <option value="5">May</option>
+                    <option value="6">June</option>
+                    <option value="7">July</option>
+                    <option value="8">August</option>
+                    <option value="9">September</option>
+                    <option value="10">October</option>
+                    <option value="11">November</option>
+                    <option value="12">December</option>
                 </select>
             </div>
 
             <!-- Year Dropdown -->
             <div class="flex-1">
                 <label class="block text-xs sm:text-sm text-gray-500 mb-1">Year</label>
-                <select class="w-full px-2.5 py-1.5 border border-gray-300 rounded-md
+                <select id="year-select" class="w-full px-2.5 py-1.5 border border-gray-300 rounded-md
                                focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
                                bg-white text-sm">
-                    <option>2023</option>
-                    <option>2024</option>
-                    <option selected>2025</option>
-                    <option>2026</option>
+                    <option value="2023">2023</option>
+                    <option value="2024">2024</option>
+                    <option value="2025">2025</option>
+                    <option value="2026">2026</option>
                 </select>
             </div>
 
             <!-- Generate Button -->
-            <button class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white
-                           px-4 sm:px-5 py-1.5 rounded-md font-medium transition-colors text-sm">
+            <button id="generate-btn" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white
+                           px-4 sm:px-5 py-1.5 rounded-md font-medium transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed">
                 Generate CSV
             </button>
+        </div>
+
+        <!-- Error message area -->
+        <div id="error-message" class="mt-3 hidden">
+            <p class="text-sm text-red-600"></p>
+        </div>
+
+        <!-- Success message area -->
+        <div id="success-message" class="mt-3 hidden">
+            <p class="text-sm text-green-600"></p>
         </div>
     </div>
 
@@ -75,28 +82,255 @@
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-5">
         <h2 class="text-base font-medium text-gray-700 mb-4">Generated Timesheets</h2>
 
-        <!-- Empty State -->
-        <div class="text-center py-8">
-            <p class="text-gray-500 text-sm">No timesheets generated yet.</p>
+        <!-- Timesheets container -->
+        <div id="timesheets-container">
+            <!-- Will be populated dynamically -->
+            <div class="text-center py-8">
+                <p class="text-gray-500 text-sm">Loading timesheets...</p>
+            </div>
         </div>
+    </div>
+</div>
 
-        <!-- Sample timesheet entries (commented out for empty state) -->
-        <!--
-        <div class="space-y-3">
-            <div class="p-3 sm:p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
-                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                    <div>
-                        <div class="font-medium text-sm">Planetary Talent - September 2025</div>
-                        <div class="text-xs text-gray-500 mt-0.5">Generated on 9/23/2025</div>
+<script>
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    loadClients();
+    loadTimesheets();
+    setCurrentMonthYear();
+
+    // Add event listener for generate button
+    document.getElementById('generate-btn').addEventListener('click', generateTimesheet);
+});
+
+// Set current month and year as defaults
+function setCurrentMonthYear() {
+    const now = new Date();
+    document.getElementById('month-select').value = now.getMonth() + 1;
+    document.getElementById('year-select').value = now.getFullYear();
+}
+
+// Load clients into dropdown
+async function loadClients() {
+    try {
+        const response = await fetch('/api/clients');
+        if (!response.ok) throw new Error('Failed to load clients');
+
+        const clients = await response.json();
+        const select = document.getElementById('client-select');
+
+        // Clear existing options except the first one
+        select.innerHTML = '<option value="">Select a client</option>';
+
+        // Add client options
+        clients.forEach(client => {
+            const option = document.createElement('option');
+            option.value = client.id;
+            option.textContent = client.name;
+            select.appendChild(option);
+        });
+    } catch (error) {
+        console.error('Error loading clients:', error);
+    }
+}
+
+// Load existing timesheets
+async function loadTimesheets() {
+    try {
+        const response = await fetch('/api/timesheets');
+        if (!response.ok) throw new Error('Failed to load timesheets');
+
+        const timesheets = await response.json();
+        const container = document.getElementById('timesheets-container');
+
+        if (timesheets.length === 0) {
+            container.innerHTML = `
+                <div class="text-center py-8">
+                    <p class="text-gray-500 text-sm">No timesheets generated yet.</p>
+                </div>
+            `;
+        } else {
+            container.innerHTML = '<div class="space-y-3">' +
+                timesheets.map(timesheet => createTimesheetElement(timesheet)).join('') +
+                '</div>';
+        }
+    } catch (error) {
+        console.error('Error loading timesheets:', error);
+        const container = document.getElementById('timesheets-container');
+        container.innerHTML = `
+            <div class="text-center py-8">
+                <p class="text-red-500 text-sm">Failed to load timesheets</p>
+            </div>
+        `;
+    }
+}
+
+// Create timesheet element HTML
+function createTimesheetElement(timesheet) {
+    const monthNames = ['', 'January', 'February', 'March', 'April', 'May', 'June',
+                        'July', 'August', 'September', 'October', 'November', 'December'];
+    const monthName = monthNames[timesheet.month];
+    const createdDate = new Date(timesheet.created_at).toLocaleDateString();
+
+    // Format hours to show HH:MM:SS format for display
+    const totalSeconds = Math.round(timesheet.total_hours * 3600);
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+    const formattedTime = `${hours}h ${minutes}m ${seconds}s`;
+
+    return `
+        <div class="p-3 sm:p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                <div>
+                    <div class="font-medium text-sm">${timesheet.client_name} - ${monthName} ${timesheet.year}</div>
+                    <div class="text-xs text-gray-500 mt-0.5">
+                        ${formattedTime} (${timesheet.total_hours.toFixed(4)} hrs) • $${timesheet.total_amount.toFixed(2)} • Generated on ${createdDate}
                     </div>
-                    <div class="flex gap-2">
-                        <button class="text-blue-600 hover:text-blue-700 text-xs sm:text-sm font-medium">Download</button>
-                        <button class="text-red-600 hover:text-red-700 text-xs sm:text-sm font-medium">Delete</button>
-                    </div>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="downloadTimesheet(${timesheet.id})" class="text-blue-600 hover:text-blue-700 text-xs sm:text-sm font-medium">Download</button>
+                    <button onclick="deleteTimesheet(${timesheet.id})" class="text-red-600 hover:text-red-700 text-xs sm:text-sm font-medium">Delete</button>
                 </div>
             </div>
         </div>
-        -->
-    </div>
-</div>
+    `;
+}
+
+// Generate timesheet
+async function generateTimesheet() {
+    const clientId = document.getElementById('client-select').value;
+    const month = document.getElementById('month-select').value;
+    const year = document.getElementById('year-select').value;
+    const generateBtn = document.getElementById('generate-btn');
+    const errorDiv = document.getElementById('error-message');
+    const successDiv = document.getElementById('success-message');
+
+    // Hide messages
+    errorDiv.classList.add('hidden');
+    successDiv.classList.add('hidden');
+
+    // Validate inputs
+    if (!clientId) {
+        showError('Please select a client');
+        return;
+    }
+
+    // Disable button during generation
+    generateBtn.disabled = true;
+    generateBtn.textContent = 'Generating...';
+
+    try {
+        const response = await fetch('/api/timesheets/generate', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                client_id: clientId,
+                month: parseInt(month),
+                year: parseInt(year)
+            })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.error || 'Failed to generate timesheet');
+        }
+
+        // Show success message
+        showSuccess('Timesheet generated successfully!');
+
+        // Reload timesheets
+        await loadTimesheets();
+
+    } catch (error) {
+        console.error('Error generating timesheet:', error);
+        showError(error.message);
+    } finally {
+        // Re-enable button
+        generateBtn.disabled = false;
+        generateBtn.textContent = 'Generate CSV';
+    }
+}
+
+// Download timesheet
+async function downloadTimesheet(timesheetId) {
+    try {
+        const response = await fetch(`/api/timesheets/${timesheetId}/download`);
+        if (!response.ok) throw new Error('Failed to download timesheet');
+
+        // Get the filename from the Content-Disposition header
+        const contentDisposition = response.headers.get('Content-Disposition');
+        let filename = 'timesheet.csv';
+        if (contentDisposition) {
+            const match = contentDisposition.match(/filename=(.+)/);
+            if (match) filename = match[1];
+        }
+
+        // Create blob and download
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+
+    } catch (error) {
+        console.error('Error downloading timesheet:', error);
+        showError('Failed to download timesheet');
+    }
+}
+
+// Delete timesheet
+async function deleteTimesheet(timesheetId) {
+    if (!confirm('Are you sure you want to delete this timesheet?')) {
+        return;
+    }
+
+    try {
+        const response = await fetch(`/api/timesheets/${timesheetId}`, {
+            method: 'DELETE'
+        });
+
+        if (!response.ok) throw new Error('Failed to delete timesheet');
+
+        // Reload timesheets
+        await loadTimesheets();
+        showSuccess('Timesheet deleted successfully');
+
+    } catch (error) {
+        console.error('Error deleting timesheet:', error);
+        showError('Failed to delete timesheet');
+    }
+}
+
+// Show error message
+function showError(message) {
+    const errorDiv = document.getElementById('error-message');
+    errorDiv.querySelector('p').textContent = message;
+    errorDiv.classList.remove('hidden');
+
+    // Hide after 5 seconds
+    setTimeout(() => {
+        errorDiv.classList.add('hidden');
+    }, 5000);
+}
+
+// Show success message
+function showSuccess(message) {
+    const successDiv = document.getElementById('success-message');
+    successDiv.querySelector('p').textContent = message;
+    successDiv.classList.remove('hidden');
+
+    // Hide after 3 seconds
+    setTimeout(() => {
+        successDiv.classList.add('hidden');
+    }, 3000);
+}
+</script>
 {% endblock %}

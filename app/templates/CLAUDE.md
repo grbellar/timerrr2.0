@@ -314,4 +314,94 @@ mobileMenuBtn.addEventListener('click', () => {
 </div>
 ```
 
+### Modal Dialog
+Modals follow the same design principles with a semi-transparent overlay and centered white card:
+
+```html
+<!-- Modal Container -->
+<div id="modal-id" class="fixed inset-0 bg-gray-900 bg-opacity-50 hidden items-center justify-center z-50" style="display: none;">
+    <div class="bg-white rounded-lg shadow-xl border border-gray-200 w-full max-w-md mx-4">
+        <!-- Modal Header -->
+        <div class="px-5 py-4 border-b border-gray-200">
+            <div class="flex items-center justify-between">
+                <h2 class="text-lg font-semibold text-gray-900">Modal Title</h2>
+                <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Modal Body -->
+        <form id="modal-form" class="px-5 py-4">
+            <!-- Form fields here -->
+            <div class="mb-4">
+                <label for="field-id" class="block text-sm font-medium text-gray-700 mb-1.5">Field Label</label>
+                <input type="text" id="field-id"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm
+                           focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+            </div>
+        </form>
+
+        <!-- Modal Footer -->
+        <div class="px-5 py-4 border-t border-gray-200 flex items-center justify-end gap-3">
+            <button onclick="closeModal()"
+                class="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors">
+                Cancel
+            </button>
+            <button onclick="saveModal()"
+                class="px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white text-sm font-medium rounded-md transition-colors">
+                Save Changes
+            </button>
+        </div>
+    </div>
+</div>
+```
+
+#### Modal JavaScript Pattern
+```javascript
+// Open modal
+function openModal() {
+    const modal = document.getElementById('modal-id');
+    modal.style.display = 'flex';
+    modal.classList.remove('hidden');
+}
+
+// Close modal
+function closeModal() {
+    const modal = document.getElementById('modal-id');
+    modal.style.display = 'none';
+    modal.classList.add('hidden');
+}
+
+// Close modal on Escape key
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeModal();
+    }
+});
+
+// Close modal on background click
+document.getElementById('modal-id').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeModal();
+    }
+});
+```
+
+#### Modal Design Specifications
+- **Overlay**: `bg-gray-900 bg-opacity-50` - Semi-transparent dark overlay
+- **Container**: `fixed inset-0` with `z-50` for highest z-index
+- **Card**: White background with `rounded-lg shadow-xl border border-gray-200`
+- **Max width**: `max-w-md` (28rem) for forms, adjust as needed
+- **Mobile margin**: `mx-4` for edge spacing on mobile
+- **Header**: `px-5 py-4` padding with bottom border
+- **Body**: `px-5 py-4` padding for form content
+- **Footer**: `px-5 py-4` padding with top border, right-aligned buttons
+- **Close button**: X icon in top-right, `text-gray-400 hover:text-gray-600`
+- **Form fields**: Standard form input styling with proper spacing
+- **Button spacing**: `gap-3` between footer buttons
+- **Animations**: Use `transition-colors` for hover states
+
 This design system prioritizes clarity, consistency, and mobile usability while maintaining a professional, minimalist aesthetic suitable for a time tracking application.

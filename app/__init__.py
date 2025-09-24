@@ -39,11 +39,15 @@ def create_app():
     from app.client import client
     from app.timer import timer
     from app.entries import entries
+    from app.stripe import stripe_bp
+    from app.timesheets import timesheets
     app.register_blueprint(main)
     app.register_blueprint(auth)
     app.register_blueprint(client)
     app.register_blueprint(timer)
     app.register_blueprint(entries)
+    app.register_blueprint(stripe_bp)
+    app.register_blueprint(timesheets)
 
     # Create database tables
     with app.app_context():

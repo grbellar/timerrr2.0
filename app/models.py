@@ -20,6 +20,9 @@ class User(UserMixin, db.Model):
     password_hash = db.Column(db.String(255), nullable=False)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     tier = db.Column(db.Enum(TierEnum), nullable=False, default=TierEnum.FREE)
+    stripe_customer_id = db.Column(db.String(255), nullable=True)
+    stripe_subscription_id = db.Column(db.String(255), nullable=True)
+    upgraded_at = db.Column(db.DateTime, nullable=True)
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -81,3 +84,23 @@ class TimeEntry(db.Model):
 
     def __repr__(self):
         return f'<TimeEntry {self.id}>'
+
+
+class Timesheet(db.Model):
+    __tablename__ = 'timesheets'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    client_id = db.Column(db.Integer, db.ForeignKey('clients.id'), nullable=False)
+    month = db.Column(db.Integer, nullable=False)  # 1-12
+    year = db.Column(db.Integer, nullable=False)
+    total_hours = db.Column(db.Float, nullable=False)
+    total_amount = db.Column(db.Float, nullable=False)
+    csv_data = db.Column(db.Text, nullable=False)  # Store CSV content as text
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+
+    user = db.relationship('User', backref=db.backref('timesheets', lazy=True), foreign_keys=[user_id])
+    client = db.relationship('Client', backref=db.backref('timesheets', lazy=True), foreign_keys=[client_id])
+
+    def __repr__(self):
+        return f'<Timesheet {self.id} - {self.client.name if self.client else "No Client"} {self.month}/{self.year}>'

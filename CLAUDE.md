@@ -22,7 +22,7 @@ python app.py
 ./start.sh
 ```
 
-The application runs on http://localhost:5000
+The application runs on http://localhost:5001
     
 ### Virtual Environment
 Always ensure the virtual environment is activated before running commands or installing packages.
@@ -41,8 +41,46 @@ Always ensure the virtual environment is activated before running commands or in
 - `/timer` - Active timer interface with real-time updates
 - `/entries` - Time entries list
 - `/timesheets` - Timesheet view
-- `/settings` - Settings page
+- `/settings` - Settings page with Stripe subscription management
 - `/api/hello` - Example API endpoint
+
+### Stripe Integration
+The application includes Stripe payment processing for Pro tier subscriptions:
+
+#### Configuration
+Set the following environment variables in `.env`:
+```bash
+STRIPE_SECRET_KEY=sk_test_...       # Your Stripe secret key
+STRIPE_WEBHOOK_SECRET=whsec_...     # Webhook endpoint signing secret
+STRIPE_PRO_PRICE_ID=price_...       # Price ID for Pro subscription
+```
+
+#### Endpoints
+- `POST /api/stripe/create-checkout-session` - Creates Stripe checkout session for Pro upgrade
+- `POST /api/stripe/webhook` - Handles Stripe webhook events
+- `GET /stripe/success` - Success redirect after payment
+- `GET /stripe/cancel` - Cancel redirect from checkout
+- `POST /api/stripe/customer-portal` - Opens Stripe customer portal for Pro users
+
+#### Webhook Events Handled
+- `checkout.session.completed` - Upgrades user to Pro tier after successful payment
+- `customer.subscription.deleted` - Downgrades user to Free tier when subscription is deleted
+- `customer.subscription.updated` - Handles subscription status changes (cancellations, failed payments, reactivations)
+
+#### Database Fields
+User model includes Stripe-specific fields:
+- `tier` - Enum field (FREE/PRO) for subscription status
+- `stripe_customer_id` - Stripe customer identifier
+- `stripe_subscription_id` - Active subscription ID
+- `upgraded_at` - Timestamp of Pro tier upgrade
+
+#### Setup Instructions
+1. Create products and prices in Stripe Dashboard
+2. Configure webhook endpoint: `https://your-domain.com/api/stripe/webhook`
+3. Select webhook events: `checkout.session.completed`, `customer.subscription.deleted`, `customer.subscription.updated`
+4. Add environment variables to `.env` file
+5. Users can upgrade via Settings page "Upgrade to Pro" button
+6. Pro users can manage subscription via "Manage Subscription" button
 
 ### Real-time Features with Socket.IO
 The application uses Flask-SocketIO for real-time timer updates across all user devices:
@@ -80,3 +118,12 @@ Templates follow a consistent design pattern documented in `app/templates/CLAUDE
 - White cards on gray-50 background
 - Consistent spacing and typography scale
 - No JavaScript frameworks - vanilla JS with Socket.IO for real-time features
+- Modal dialogs with semi-transparent overlay and centered white cards
+- Standardized component patterns for empty states, loading states, and data tables
+
+#### Key UI Components
+- **Modal dialogs** - Centered white cards with dark overlay, closable via X button, Cancel, Escape key, or clicking outside
+- **Form inputs** - Consistent styling with focus rings and proper spacing
+- **Buttons** - Primary (dark bg), secondary (text only), danger (red text)
+- **Status indicators** - Green dots for running timers
+- **Responsive tables** - Stack on mobile, horizontal on desktop
