@@ -1,6 +1,9 @@
 from app import create_app
+import os
 
 app, socketio = create_app()
 
 if __name__ == '__main__':
-    socketio.run(app, debug=True, host='0.0.0.0', port=5001, use_reloader=True)
+    port = int(os.environ.get('PORT', 5001))
+    # Run without async_mode specified - Flask-SocketIO will auto-select threading mode
+    socketio.run(app, debug=True, host='0.0.0.0', port=port, use_reloader=True)

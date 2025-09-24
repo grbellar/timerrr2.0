@@ -6,7 +6,8 @@
       "Bash(pip install:*)",
       "Bash(kill:*)",
       "Bash(curl:*)",
-      "Bash(sqlite3:*)"
+      "Bash(sqlite3:*)",
+      "WebSearch"
     ],
     "deny": [],
     "ask": []

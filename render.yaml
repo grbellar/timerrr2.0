@@ -3,10 +3,8 @@ services:
     name: timerrr
     runtime: python
     buildCommand: "./build.sh"
-    startCommand: "gunicorn --worker-class eventlet -w 1 --bind 0.0.0.0:$PORT app:app"
+    startCommand: "gunicorn --threads 4 -w 1 --bind 0.0.0.0:$PORT app:app"
     envVars:
-      - key: PYTHON_VERSION
-        value: 3.11.8
       - key: SECRET_KEY
         generateValue: true
       - key: DATABASE_URL
