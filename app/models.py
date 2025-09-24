@@ -2,8 +2,14 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime, timezone
+import enum
 
 db = SQLAlchemy()
+
+
+class TierEnum(enum.Enum):
+    FREE = "Free"
+    PRO = "Pro"
 
 
 class User(UserMixin, db.Model):
@@ -13,6 +19,7 @@ class User(UserMixin, db.Model):
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(255), nullable=False)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    tier = db.Column(db.Enum(TierEnum), nullable=False, default=TierEnum.FREE)
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
