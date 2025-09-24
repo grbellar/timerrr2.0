@@ -7,34 +7,255 @@
     <!-- Page Title Section -->
     <div class="mb-5 sm:mb-6">
         <h1 class="text-xl sm:text-2xl font-semibold mb-1">Time Tracking</h1>
-        <p class="text-sm text-gray-600">Track time for multiple clients simultaneously. I won't judge...</p>
+        <p class="text-sm text-gray-600">Track time for multiple clients simultaneously.</p>
     </div>
 
-    <!-- Timer Card -->
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-5">
-        <div class="flex flex-col gap-2">
-            <!-- Top row: Client name and Timer -->
-            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                <div class="flex items-center gap-3">
-                    <h2 class="text-base font-medium text-gray-700">Planetary Talent</h2>
-                    <div class="flex items-center gap-1.5">
-                        <div class="w-2 h-2 bg-green-500 rounded-full"></div>
-                        <span class="text-sm text-gray-500">timer running</span>
+    <!-- Timer Cards Container -->
+    <div id="timer-cards" class="space-y-4">
+        {% if client_timers %}
+            {% for item in client_timers %}
+            <div class="timer-card bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-5"
+                 data-client-id="{{ item.client.id }}">
+                <div class="flex flex-col gap-2">
+                    <!-- Top row: Client name and Timer -->
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                        <div class="flex items-center gap-3">
+                            <h2 class="text-base font-medium text-gray-700">{{ item.client.name }}</h2>
+                            <div class="timer-status flex items-center gap-1.5"
+                                 style="{% if not item.running_timer %}display: none;{% endif %}">
+                                <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                                <span class="text-sm text-gray-500">timer running</span>
+                            </div>
+                        </div>
+                        <div class="timer-display text-2xl sm:text-3xl font-semibold"
+                             data-start-time="{% if item.running_timer %}{{ item.running_timer.start_time.isoformat() }}Z{% endif %}">
+                            {% if item.running_timer %}
+                                0:00:00
+                            {% else %}
+                                0:00:00
+                            {% endif %}
+                        </div>
+                    </div>
+                    <!-- Bottom row: Notes input and Button -->
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                        <input type="text"
+                            class="timer-notes w-full sm:w-1/3 px-2.5 py-1.5 border border-gray-200 rounded-md text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-gray-50"
+                            placeholder="What are you working on?"
+                            value="{% if item.running_timer %}{{ item.running_timer.notes or '' }}{% endif %}"
+                            data-timer-id="{% if item.running_timer %}{{ item.running_timer.id }}{% endif %}"
+                            {% if not item.running_timer %}disabled{% endif %}>
+                        <button class="timer-button w-full sm:w-auto px-4 sm:px-5 py-2 rounded-lg font-medium transition-colors text-sm {% if item.running_timer %}bg-red-600 hover:bg-red-700{% else %}bg-green-600 hover:bg-green-700{% endif %} text-white"
+                                onclick="toggleTimer({{ item.client.id }})"
+                                data-running="{% if item.running_timer %}true{% else %}false{% endif %}">
+                            <span class="button-text">{% if item.running_timer %}Clock out{% else %}Clock in{% endif %}</span>
+                        </button>
                     </div>
                 </div>
-                <div class="text-2xl sm:text-3xl font-semibold">0:00:11</div>
             </div>
-            <!-- Bottom row: Description and Button -->
-            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                <input type="text"
-                    value="Working on timesheet implementation"
-                    placeholder="What are you working on?"
-                    class="w-full sm:w-1/3 px-2.5 py-1.5 border border-gray-200 rounded-md text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-gray-50">
-                <button class="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white px-4 sm:px-5 py-2 rounded-lg font-medium transition-colors text-sm">
-                    Clock out
-                </button>
+            {% endfor %}
+        {% else %}
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
+                <p class="text-gray-500 mb-4">No clients found. Create a client to start tracking time.</p>
+                <a href="/settings" class="text-blue-600 hover:text-blue-700 font-medium">Go to Settings</a>
             </div>
-        </div>
+        {% endif %}
     </div>
 </div>
+
+<!-- Socket.IO Client -->
+<script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+<script>
+    // Initialize Socket.IO connection
+    const socket = io();
+
+    // Timer intervals storage
+    const timerIntervals = {};
+
+    // Connect event
+    socket.on('connect', function() {
+        console.log('Connected to timer updates');
+    });
+
+    // Timer started event
+    socket.on('timer_started', function(data) {
+        updateTimerCard(data.client_id, true, data.timer_id, data.start_time, data.notes);
+    });
+
+    // Timer stopped event
+    socket.on('timer_stopped', function(data) {
+        updateTimerCard(data.client_id, false);
+    });
+
+    // Notes updated event
+    socket.on('notes_updated', function(data) {
+        const card = document.querySelector(`[data-client-id="${data.client_id}"]`);
+        if (card) {
+            const notesInput = card.querySelector('.timer-notes');
+            if (notesInput && notesInput !== document.activeElement) {
+                notesInput.value = data.notes;
+            }
+        }
+    });
+
+    // Toggle timer function
+    function toggleTimer(clientId) {
+        const card = document.querySelector(`[data-client-id="${clientId}"]`);
+        const button = card.querySelector('.timer-button');
+        const isRunning = button.dataset.running === 'true';
+
+        if (isRunning) {
+            // Stop timer
+            const notesInput = card.querySelector('.timer-notes');
+            fetch(`/api/clients/${clientId}/timer/stop`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    notes: notesInput.value
+                })
+            }).then(response => {
+                if (response.ok) {
+                    socket.emit('stop_timer', { client_id: clientId });
+                    // Reload page to refresh timer state
+                    setTimeout(() => location.reload(), 100);
+                }
+            });
+        } else {
+            // Start timer
+            fetch(`/api/clients/${clientId}/timer/start`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            }).then(response => {
+                if (response.ok) {
+                    return response.json();
+                }
+            }).then(data => {
+                if (data) {
+                    socket.emit('start_timer', { client_id: clientId });
+                    // Reload page to refresh timer state
+                    setTimeout(() => location.reload(), 100);
+                }
+            });
+        }
+    }
+
+    // Update timer card UI
+    function updateTimerCard(clientId, isRunning, timerId = null, startTime = null, notes = '') {
+        const card = document.querySelector(`[data-client-id="${clientId}"]`);
+        if (!card) return;
+
+        const button = card.querySelector('.timer-button');
+        const timerStatus = card.querySelector('.timer-status');
+        const timerDisplay = card.querySelector('.timer-display');
+        const notesInput = card.querySelector('.timer-notes');
+
+        button.dataset.running = isRunning ? 'true' : 'false';
+
+        if (isRunning) {
+            // Update to running state
+            button.className = 'timer-button w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white px-4 sm:px-5 py-2 rounded-lg font-medium transition-colors text-sm';
+            button.innerHTML = '<span class="button-text">Clock out</span>';
+            timerStatus.style.display = 'flex';
+            notesInput.disabled = false;
+            notesInput.dataset.timerId = timerId;
+            notesInput.value = notes;
+            timerDisplay.dataset.startTime = startTime.endsWith('Z') ? startTime : startTime + 'Z';
+
+            // Start timer interval
+            if (!timerIntervals[clientId]) {
+                timerIntervals[clientId] = setInterval(() => updateElapsedTime(clientId), 1000);
+                updateElapsedTime(clientId);
+            }
+        } else {
+            // Update to stopped state
+            button.className = 'timer-button w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white px-4 sm:px-5 py-2 rounded-lg font-medium transition-colors text-sm';
+            button.innerHTML = '<span class="button-text">Clock in</span>';
+            timerStatus.style.display = 'none';
+            notesInput.disabled = true;
+            notesInput.value = '';
+            notesInput.dataset.timerId = '';
+            timerDisplay.textContent = '0:00:00';
+            timerDisplay.dataset.startTime = '';
+
+            // Clear timer interval
+            if (timerIntervals[clientId]) {
+                clearInterval(timerIntervals[clientId]);
+                delete timerIntervals[clientId];
+            }
+        }
+    }
+
+    // Update elapsed time display
+    function updateElapsedTime(clientId) {
+        const card = document.querySelector(`[data-client-id="${clientId}"]`);
+        if (!card) return;
+
+        const timerDisplay = card.querySelector('.timer-display');
+        const startTime = timerDisplay.dataset.startTime;
+
+        if (!startTime) return;
+
+        const start = new Date(startTime);
+        const now = new Date();
+        const elapsed = Math.floor((now - start) / 1000);
+
+        // Handle negative elapsed time (shouldn't happen but just in case)
+        if (elapsed < 0) {
+            timerDisplay.textContent = '0:00:00';
+            return;
+        }
+
+        const hours = Math.floor(elapsed / 3600);
+        const minutes = Math.floor((elapsed % 3600) / 60);
+        const seconds = elapsed % 60;
+
+        timerDisplay.textContent = `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    }
+
+    // Notes auto-save with debounce
+    let notesTimeout;
+    document.addEventListener('input', function(e) {
+        if (e.target.classList.contains('timer-notes')) {
+            const timerId = e.target.dataset.timerId;
+            if (!timerId) return;
+
+            clearTimeout(notesTimeout);
+            notesTimeout = setTimeout(() => {
+                fetch(`/api/timers/${timerId}/notes`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        notes: e.target.value
+                    })
+                }).then(response => {
+                    if (response.ok) {
+                        socket.emit('update_notes', {
+                            timer_id: parseInt(timerId),
+                            notes: e.target.value
+                        });
+                    }
+                });
+            }, 500); // 500ms debounce
+        }
+    });
+
+    // Initialize timers on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.timer-card').forEach(card => {
+            const clientId = parseInt(card.dataset.clientId);
+            const button = card.querySelector('.timer-button');
+            const isRunning = button.dataset.running === 'true';
+
+            if (isRunning) {
+                timerIntervals[clientId] = setInterval(() => updateElapsedTime(clientId), 1000);
+                updateElapsedTime(clientId);
+            }
+        });
+    });
+</script>
 {% endblock %}

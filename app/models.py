@@ -35,6 +35,14 @@ class Client(db.Model):
 
     user = db.relationship('User', backref=db.backref('clients', lazy=True), foreign_keys=[user_id])
 
+    def get_running_timer(self):
+        """Get the current running timer for this client, if any"""
+        return TimeEntry.query.filter_by(
+            client_id=self.id,
+            user_id=self.user_id,
+            end_time=None
+        ).first()
+
     def __repr__(self):
         return f'<Client {self.name}>'
 
@@ -45,10 +53,10 @@ class TimeEntry(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     client_id = db.Column(db.Integer, db.ForeignKey('clients.id'), nullable=True)
-    description = db.Column(db.Text)
     start_time = db.Column(db.DateTime, nullable=False)
     end_time = db.Column(db.DateTime)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    notes = db.Column(db.Text)
 
     user = db.relationship('User', backref=db.backref('time_entries', lazy=True), foreign_keys=[user_id])
     client = db.relationship('Client', backref=db.backref('time_entries', lazy=True), foreign_keys=[client_id])

@@ -13,7 +13,18 @@ def index():
 @main.route('/timer')
 @login_required
 def timer():
-    return render_template('timer.html')
+    # Get all clients for the current user with their timer status
+    clients = Client.query.filter_by(user_id=current_user.id).all()
+
+    client_timers = []
+    for client in clients:
+        running_timer = client.get_running_timer()
+        client_timers.append({
+            'client': client,
+            'running_timer': running_timer
+        })
+
+    return render_template('timer.html', client_timers=client_timers)
 
 @main.route('/entries')
 @login_required

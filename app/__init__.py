@@ -26,16 +26,22 @@ def create_app():
     def load_user(user_id):
         return User.query.get(int(user_id))
 
+    # Initialize SocketIO
+    from app.socketio_events import socketio
+    socketio.init_app(app)
+
     # Register blueprints
     from app.auth import auth
     from app.main import main
     from app.client import client
+    from app.timer import timer
     app.register_blueprint(main)
     app.register_blueprint(auth)
     app.register_blueprint(client)
+    app.register_blueprint(timer)
 
     # Create database tables
     with app.app_context():
         db.create_all()
 
-    return app
+    return app, socketio
