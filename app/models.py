@@ -31,6 +31,7 @@ class Client(db.Model):
     name = db.Column(db.String(100), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    hourly_rate = db.Column(db.Float, nullable=False, default=0.0)
 
     user = db.relationship('User', backref=db.backref('clients', lazy=True), foreign_keys=[user_id])
 

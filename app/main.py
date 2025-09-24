@@ -1,5 +1,6 @@
 from flask import Blueprint, render_template, redirect, url_for
 from flask_login import login_required, current_user
+from app.models import Client
 
 main = Blueprint('main', __name__)
 
@@ -27,7 +28,8 @@ def timesheets():
 @main.route('/settings')
 @login_required
 def settings():
-    return render_template('settings.html')
+    clients = Client.query.filter_by(user_id=current_user.id).all()
+    return render_template('settings.html', clients=clients)
 
 @main.route('/api/hello')
 @login_required

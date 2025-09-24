@@ -23,7 +23,7 @@ python app.py
 ```
 
 The application runs on http://localhost:5000
-
+    
 ### Virtual Environment
 Always ensure the virtual environment is activated before running commands or installing packages.
 

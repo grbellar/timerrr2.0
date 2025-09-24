@@ -29,8 +29,10 @@ def create_app():
     # Register blueprints
     from app.auth import auth
     from app.main import main
+    from app.client import client
     app.register_blueprint(main)
     app.register_blueprint(auth)
+    app.register_blueprint(client)
 
     # Create database tables
     with app.app_context():

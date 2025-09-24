@@ -113,7 +113,7 @@ List view of all time entries with filtering:
 ```html
 <div class="flex items-center gap-1.5">
     <div class="w-2 h-2 bg-green-500 rounded-full"></div>
-    <span class="text-xs text-gray-500">Timer running</span>
+    <span class="text-xs text-gray-500">timer running</span>
 </div>
 ```
 
