@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}timerrr{% endblock %}</title>
+    <title>{% block title %}Timerrr{% endblock %}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -26,7 +26,7 @@
         <div class="max-w-6xl mx-auto px-4 sm:px-6">
             <div class="flex items-center justify-between h-14">
                 <!-- Logo -->
-                <a href="/" class="text-lg font-semibold">timerrr</a>
+                <a href="/" class="text-lg font-semibold">Timerrr</a>
 
                 <!-- Desktop Navigation -->
                 <nav class="hidden md:flex items-center space-x-5 lg:space-x-6">
@@ -34,7 +34,7 @@
                     <a href="/entries" class="text-sm text-gray-600 hover:text-gray-900 transition-colors">Entries</a>
                     <a href="/timesheets" class="text-sm text-gray-600 hover:text-gray-900 transition-colors">Timesheets</a>
                     <a href="/settings" class="text-sm text-gray-600 hover:text-gray-900 transition-colors">Settings</a>
-                    <a href="#" class="text-sm text-gray-600 hover:text-gray-900 transition-colors">Logout</a>
+                    <a href="{{ url_for('auth.logout') }}" class="text-sm text-gray-600 hover:text-gray-900 transition-colors">Logout</a>
                 </nav>
 
                 <!-- Mobile Menu Button -->
@@ -53,7 +53,7 @@
                     <a href="/entries" class="text-sm text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md hover:bg-gray-100 transition-colors">Entries</a>
                     <a href="/timesheets" class="text-sm text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md hover:bg-gray-100 transition-colors">Timesheets</a>
                     <a href="/settings" class="text-sm text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md hover:bg-gray-100 transition-colors">Settings</a>
-                    <a href="#" class="text-sm text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md hover:bg-gray-100 transition-colors">Logout</a>
+                    <a href="{{ url_for('auth.logout') }}" class="text-sm text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md hover:bg-gray-100 transition-colors">Logout</a>
                 </div>
             </nav>
         </div>

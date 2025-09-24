@@ -1,28 +1,35 @@
-from flask import Blueprint, render_template
+from flask import Blueprint, render_template, redirect, url_for
+from flask_login import login_required, current_user
 
 main = Blueprint('main', __name__)
 
 @main.route('/')
 def index():
+    if not current_user.is_authenticated:
+        return redirect(url_for('auth.login'))
     return render_template('index.html')
 
-
 @main.route('/timer')
+@login_required
 def timer():
     return render_template('timer.html')
 
 @main.route('/entries')
+@login_required
 def entries():
     return render_template('entries.html')
 
 @main.route('/timesheets')
+@login_required
 def timesheets():
     return render_template('timesheets.html')
 
 @main.route('/settings')
+@login_required
 def settings():
     return render_template('settings.html')
 
 @main.route('/api/hello')
+@login_required
 def api_hello():
-    return {'message': 'Flask API is running!'}
+    return {'message': 'Flask API is running!', 'user': current_user.email}
