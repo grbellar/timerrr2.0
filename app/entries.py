@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
 from flask_login import login_required, current_user
 from app.models import db, Client, TimeEntry
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from sqlalchemy import and_
 
 entries = Blueprint('entries', __name__)
@@ -17,6 +17,9 @@ def get_entries():
     start_date = request.args.get('start_date')
     end_date = request.args.get('end_date')
 
+    # Debug logging
+    print(f"Filtering entries - start_date: {start_date}, end_date: {end_date}, client_id: {client_id}")
+
     # Build query
     query = TimeEntry.query.filter_by(user_id=current_user.id)
 
@@ -26,24 +29,41 @@ def get_entries():
 
     if start_date:
         try:
-            start_datetime = datetime.fromisoformat(start_date).replace(tzinfo=timezone.utc)
+            # Parse the date string (YYYY-MM-DD format)
+            start_datetime = datetime.strptime(start_date, '%Y-%m-%d')
+            # Set to beginning of day and account for timezone
+            # Subtract a day to catch entries that might be from "yesterday" in UTC but "today" locally
+            start_datetime = start_datetime.replace(hour=0, minute=0, second=0, microsecond=0, tzinfo=timezone.utc)
+            start_datetime = start_datetime - timedelta(hours=24)  # Go back 24 hours to be inclusive
             query = query.filter(TimeEntry.start_time >= start_datetime)
-        except ValueError:
-            pass
+            print(f"Filtering from: {start_datetime}")
+        except (ValueError, TypeError) as e:
+            print(f"Error parsing start_date: {e}")
 
     if end_date:
         try:
-            # Add 23:59:59 to end date to include the entire day
-            end_datetime = datetime.fromisoformat(end_date).replace(hour=23, minute=59, second=59, tzinfo=timezone.utc)
+            # Parse the date string (YYYY-MM-DD format)
+            end_datetime = datetime.strptime(end_date, '%Y-%m-%d')
+            # Set to end of day and account for timezone
+            # Add a day to catch entries that might be from "tomorrow" in UTC but "today" locally
+            end_datetime = end_datetime.replace(hour=23, minute=59, second=59, microsecond=999999, tzinfo=timezone.utc)
+            end_datetime = end_datetime + timedelta(hours=24)  # Go forward 24 hours to be inclusive
             query = query.filter(TimeEntry.start_time <= end_datetime)
-        except ValueError:
-            pass
+            print(f"Filtering to: {end_datetime}")
+        except (ValueError, TypeError) as e:
+            print(f"Error parsing end_date: {e}")
 
     # Order by start_time descending (most recent first)
     query = query.order_by(TimeEntry.start_time.desc())
 
     # Paginate
     paginated = query.paginate(page=page, per_page=per_page, error_out=False)
+    print(f"Found {paginated.total} entries after filtering")
+
+    # Debug: Show first entry's date if exists
+    if paginated.items:
+        first_entry = paginated.items[0]
+        print(f"First entry start_time: {first_entry.start_time}")
 
     # Format results
     entries_list = []
