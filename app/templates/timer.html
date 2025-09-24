@@ -78,7 +78,9 @@
 
     // Timer started event
     socket.on('timer_started', function(data) {
-        updateTimerCard(data.client_id, true, data.timer_id, data.start_time, data.notes);
+        // Ensure UTC format with Z suffix
+        const startTime = data.start_time.endsWith('Z') ? data.start_time : data.start_time + 'Z';
+        updateTimerCard(data.client_id, true, data.timer_id, startTime, data.notes);
     });
 
     // Timer stopped event
@@ -114,12 +116,6 @@
                 body: JSON.stringify({
                     notes: notesInput.value
                 })
-            }).then(response => {
-                if (response.ok) {
-                    socket.emit('stop_timer', { client_id: clientId });
-                    // Reload page to refresh timer state
-                    setTimeout(() => location.reload(), 100);
-                }
             });
         } else {
             // Start timer
@@ -127,16 +123,6 @@
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
-                }
-            }).then(response => {
-                if (response.ok) {
-                    return response.json();
-                }
-            }).then(data => {
-                if (data) {
-                    socket.emit('start_timer', { client_id: clientId });
-                    // Reload page to refresh timer state
-                    setTimeout(() => location.reload(), 100);
                 }
             });
         }
@@ -232,13 +218,6 @@
                     body: JSON.stringify({
                         notes: e.target.value
                     })
-                }).then(response => {
-                    if (response.ok) {
-                        socket.emit('update_notes', {
-                            timer_id: parseInt(timerId),
-                            notes: e.target.value
-                        });
-                    }
                 });
             }, 500); // 500ms debounce
         }

@@ -2,6 +2,7 @@ from flask import Blueprint, request, jsonify
 from flask_login import login_required, current_user
 from app.models import db, Client, TimeEntry
 from datetime import datetime, timezone
+from app.socketio_events import socketio
 
 timer = Blueprint('timer', __name__)
 
@@ -57,6 +58,16 @@ def start_timer(client_id):
     db.session.add(entry)
     db.session.commit()
 
+    # Emit Socket.IO event to all user's connected devices
+    room = f"user_{current_user.id}"
+    socketio.emit('timer_started', {
+        'timer_id': entry.id,
+        'client_id': client_id,
+        'client_name': client.name,
+        'start_time': entry.start_time.isoformat(),
+        'notes': entry.notes
+    }, room=room)
+
     return jsonify({
         'id': entry.id,
         'client_id': client_id,
@@ -88,6 +99,16 @@ def stop_timer(client_id):
 
     db.session.commit()
 
+    # Emit Socket.IO event to all user's connected devices
+    room = f"user_{current_user.id}"
+    socketio.emit('timer_stopped', {
+        'timer_id': entry.id,
+        'client_id': client_id,
+        'client_name': client.name,
+        'end_time': entry.end_time.isoformat(),
+        'duration': entry.duration
+    }, room=room)
+
     return jsonify({
         'id': entry.id,
         'client_id': client_id,
@@ -115,6 +136,14 @@ def update_timer_notes(timer_id):
 
     entry.notes = notes
     db.session.commit()
+
+    # Emit Socket.IO event to all user's connected devices
+    room = f"user_{current_user.id}"
+    socketio.emit('notes_updated', {
+        'timer_id': timer_id,
+        'client_id': entry.client_id,
+        'notes': notes
+    }, room=room)
 
     return jsonify({
         'id': entry.id,
