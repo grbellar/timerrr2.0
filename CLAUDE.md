@@ -45,17 +45,33 @@ Always ensure the virtual environment is activated before running commands or in
 - `/api/hello` - Example API endpoint
 
 ### Real-time Features with Socket.IO
-The application uses Flask-SocketIO for real-time timer updates:
+The application uses Flask-SocketIO for real-time timer updates across all user devices:
+
+#### Architecture
+- **Server-side broadcasting** - Events are emitted from API endpoints in `app/timer.py` after database changes
+- **User-specific rooms** - Each user joins a room `user_{id}` for isolated broadcasts
+- **No page refresh needed** - All timer state changes sync instantly across devices
+
+#### Implementation Details
 - **WebSocket events** handled in `app/socketio_events.py`
-- **Timer synchronization** - All clients see timer updates in real-time
-- **Auto-save notes** - Timer notes are saved automatically with debouncing
-- **Event types**:
-  - `timer_started` - Broadcast when a timer starts
-  - `timer_stopped` - Broadcast when a timer stops
-  - `notes_updated` - Broadcast when timer notes are updated
+- **Broadcasting from API** - Timer API endpoints emit Socket.IO events after DB updates
+- **Room-based isolation** - Events broadcast to `user_{current_user.id}` room only
+- **Event flow**:
+  1. User clicks "Clock in" → API call to `/api/clients/{id}/timer/start`
+  2. Server creates timer in DB, then broadcasts `timer_started` to user's room
+  3. All user's connected devices receive event and update UI instantly
+
+#### Event Types
+- `timer_started` - Broadcast when a timer starts (includes timer_id, client_id, start_time)
+- `timer_stopped` - Broadcast when a timer stops (includes timer_id, client_id, end_time)
+- `notes_updated` - Broadcast when timer notes are updated (includes timer_id, notes)
+
+#### Frontend Integration
 - **Client-side Socket.IO** loaded via CDN in timer.html
 - **JavaScript timer display** - Updates every second using setInterval
 - **UTC timezone handling** - All timestamps use UTC with 'Z' suffix for proper JavaScript parsing
+- **Auto-save notes** - Timer notes saved automatically with 500ms debouncing
+- **No redundant emissions** - Client only makes API calls, server handles all Socket.IO broadcasts
 
 ### Frontend Design System
 Templates follow a consistent design pattern documented in `app/templates/CLAUDE.md`:

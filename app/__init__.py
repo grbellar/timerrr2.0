@@ -24,7 +24,10 @@ def create_app():
 
     @login_manager.user_loader
     def load_user(user_id):
-        return User.query.get(int(user_id))
+        try:
+            return User.query.get(int(user_id))
+        except Exception:
+            return None
 
     # Initialize SocketIO
     from app.socketio_events import socketio
@@ -35,10 +38,12 @@ def create_app():
     from app.main import main
     from app.client import client
     from app.timer import timer
+    from app.entries import entries
     app.register_blueprint(main)
     app.register_blueprint(auth)
     app.register_blueprint(client)
     app.register_blueprint(timer)
+    app.register_blueprint(entries)
 
     # Create database tables
     with app.app_context():
