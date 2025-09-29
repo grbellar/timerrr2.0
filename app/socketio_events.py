@@ -3,7 +3,7 @@ from flask_login import current_user
 from app.models import db, TimeEntry, Client
 from datetime import datetime, timezone
 
-socketio = SocketIO(cors_allowed_origins="*", async_mode='threading')
+socketio = SocketIO(cors_allowed_origins="*", async_mode='gevent')
 
 @socketio.on('connect')
 def handle_connect():
