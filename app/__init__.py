@@ -13,6 +13,12 @@ def create_app():
 
     # Use persistent disk for SQLite database in production, local file in development
     db_path = os.environ.get('DATABASE_PATH', 'timerrr.db')
+
+    # Ensure the directory exists for the database file
+    db_dir = os.path.dirname(db_path)
+    if db_dir and not os.path.exists(db_dir):
+        os.makedirs(db_dir, exist_ok=True)
+
     app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 

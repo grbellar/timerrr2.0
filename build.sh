@@ -5,5 +5,4 @@
 # Install dependencies
 pip install -r requirements.txt
 
-# Create database tables
-python -c "from app import create_app; from app.models import db; app, socketio = create_app(); app.app_context().push(); db.create_all(); print('Database initialized')"
+# Note: Database initialization moved to app startup since persistent disk is only available at runtime
