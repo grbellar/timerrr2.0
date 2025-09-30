@@ -1,9 +1,522 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Timerrr - Simple Time Tracking</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="font-inter bg-gray-50 text-gray-900">
+    <!-- Header -->
+    <header class="bg-white border-b border-gray-200">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6">
+            <div class="flex items-center justify-between h-14">
+                <a href="/" class="text-lg font-semibold">Timerrr</a>
+                <div class="flex items-center gap-4">
+                    <a href="{{ url_for('auth.login') }}" class="text-sm text-gray-600 hover:text-gray-900 transition-colors">Log in</a>
+                    <a href="{{ url_for('auth.register') }}" class="px-4 py-1.5 bg-gray-900 hover:bg-gray-800 text-white rounded-md font-medium transition-colors text-sm">Sign up</a>
+                </div>
+            </div>
+        </div>
+    </header>
 
-{% block title %}Timer - timerrr{% endblock %}
+    <!-- Hero Section -->
+    <main class="min-h-screen">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 py-16 sm:py-24 text-center relative">
+            <!-- Diagonal Banner -->
+            <div class="absolute top-8 right-0 sm:right-12 transform rotate-12 bg-yellow-400 text-gray-900 px-4 py-2 rounded-lg shadow-lg font-semibold text-sm whitespace-nowrap">
+                preserve your sanity! 🤯
+            </div>
 
-{% block content %}
-<div class="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-12">
-    <h1>Hello!</h1>
-</div>
-{% endblock %}
+            <!-- Main Headline -->
+            <h1 class="text-4xl sm:text-5xl lg:text-6xl font-semibold mb-6 text-gray-900">
+                Dead Simple Time Tracking.<br>For Freelancers.
+            </h1>
+
+            <!-- Subheadline -->
+            <p class="text-lg sm:text-xl text-gray-600 mb-10 max-w-2xl mx-auto">
+                Track time for your clients with a clean interface that stays out of your way. Generate timesheets. Just what you need.
+            </p>
+
+            <!-- CTA Buttons -->
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
+                <a href="{{ url_for('auth.register') }}"
+                   class="w-full sm:w-auto px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors text-base">
+                    Start a timer in under 20 seconds
+                </a>
+            </div>
+
+            <!-- Features Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 text-left max-w-4xl mx-auto mt-20">
+                <!-- Feature 1 -->
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                    <div class="mb-3">
+                        <svg class="w-8 h-8 text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-semibold mb-2 text-gray-900">One-click tracking</h3>
+                    <p class="text-sm text-gray-600">Clock in and out instantly. No complicated forms or project hierarchies.</p>
+                </div>
+
+                <!-- Feature 2 -->
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                    <div class="mb-3">
+                        <svg class="w-8 h-8 text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-semibold mb-2 text-gray-900">Real-time multi-device sync</h3>
+                    <p class="text-sm text-gray-600">Clock in on your laptop, clock out on your phone. All your devices stay in sync instantly.</p>
+                </div>
+
+                <!-- Feature 3 -->
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                    <div class="mb-3">
+                        <svg class="w-8 h-8 text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-semibold mb-2 text-gray-900">Automatic timesheets</h3>
+                    <p class="text-sm text-gray-600">Generate professional timesheets with your logged hours. No manual calculations.</p>
+                </div>
+            </div>
+
+            <!-- See it in Action Section -->
+            <div class="mt-20 sm:mt-32">
+                <h2 class="text-3xl sm:text-4xl font-semibold mb-12 text-center text-gray-900">Try it out!</h2>
+
+                <!-- Demo Interface -->
+                <div class="bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden max-w-5xl mx-auto">
+                    <!-- Demo Header with Tabs -->
+                    <div class="border-b border-gray-200 px-4 sm:px-6">
+                        <div class="flex items-center justify-between h-14">
+                            <div class="text-lg font-semibold">Timerrr</div>
+                            <nav class="flex items-center space-x-5 lg:space-x-6">
+                                <button onclick="showTab('timer')" id="tab-timer" class="demo-tab text-sm font-medium transition-colors pb-3 border-b-2 border-gray-900 text-gray-900">Timer</button>
+                                <button onclick="showTab('entries')" id="tab-entries" class="demo-tab text-sm text-gray-600 hover:text-gray-900 transition-colors pb-3 border-b-2 border-transparent">Entries</button>
+                                <button onclick="showTab('timesheets')" id="tab-timesheets" class="demo-tab text-sm text-gray-600 hover:text-gray-900 transition-colors pb-3 border-b-2 border-transparent">Timesheets</button>
+                            </nav>
+                        </div>
+                    </div>
+
+                    <!-- Tab Content Container -->
+                    <div class="p-6 sm:p-8 bg-gray-50 min-h-[400px]">
+                        <!-- Timer Tab -->
+                        <div id="content-timer" class="demo-content">
+                            <div id="timers-container" class="space-y-4">
+                                <!-- Timer cards will be rendered here dynamically -->
+                            </div>
+                        </div>
+
+                        <!-- Entries Tab -->
+                        <div id="content-entries" class="demo-content hidden">
+                            <!-- Filters -->
+                            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-5 mb-4">
+                                <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+                                    <div class="flex flex-col sm:flex-row sm:items-center gap-3 flex-1">
+                                        <input type="date" placeholder="mm/dd/yyyy"
+                                            class="flex-1 sm:flex-initial px-2.5 py-1.5 border border-gray-300 rounded-md text-sm bg-white">
+                                        <span class="hidden sm:block text-gray-500 text-sm">to</span>
+                                        <input type="date" placeholder="mm/dd/yyyy"
+                                            class="flex-1 sm:flex-initial px-2.5 py-1.5 border border-gray-300 rounded-md text-sm bg-white">
+                                        <select id="entries-client-filter" class="flex-1 sm:flex-initial px-2.5 py-1.5 border border-gray-300 rounded-md text-sm bg-white">
+                                            <option value="">All Clients</option>
+                                        </select>
+                                    </div>
+                                    <button onclick="applyEntriesFilter()" class="px-4 py-1.5 bg-gray-900 hover:bg-gray-800 text-white rounded-md font-medium transition-colors text-sm">
+                                        Apply
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Entries List -->
+                            <div id="entries-list" class="bg-white rounded-lg shadow-sm border border-gray-200">
+                                <!-- Entries will be rendered here dynamically -->
+                            </div>
+
+                            <!-- Pagination -->
+                            <div class="mt-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+                                <div id="entries-count" class="text-sm text-gray-600">Showing 0-0 of 0 entries</div>
+                                <div class="flex items-center gap-2">
+                                    <button disabled class="px-3 py-1 border border-gray-300 rounded-md text-sm opacity-50">Previous</button>
+                                    <span class="px-3 py-1 text-sm">Page 1 of 1</span>
+                                    <button disabled class="px-3 py-1 border border-gray-300 rounded-md text-sm opacity-50">Next</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Timesheets Tab -->
+                        <div id="content-timesheets" class="demo-content hidden">
+                            <!-- Generate Card -->
+                            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-5 mb-5">
+                                <h2 class="text-base font-medium text-gray-700 mb-4">Generate New Timesheet</h2>
+
+                                <div class="flex flex-col sm:flex-row sm:items-end gap-3">
+                                    <div class="flex-1">
+                                        <label class="block text-xs sm:text-sm text-gray-500 mb-1">Client</label>
+                                        <select id="timesheet-client" class="w-full px-2.5 py-1.5 border border-gray-300 rounded-md bg-white text-sm">
+                                            <option value="">Select a client</option>
+                                        </select>
+                                    </div>
+                                    <div class="flex-1">
+                                        <label class="block text-xs sm:text-sm text-gray-500 mb-1">Month</label>
+                                        <select id="timesheet-month" class="w-full px-2.5 py-1.5 border border-gray-300 rounded-md bg-white text-sm">
+                                            <option value="1">January</option>
+                                            <option value="2">February</option>
+                                            <option value="3">March</option>
+                                            <option value="4">April</option>
+                                            <option value="5">May</option>
+                                            <option value="6">June</option>
+                                            <option value="7">July</option>
+                                            <option value="8">August</option>
+                                            <option value="9" selected>September</option>
+                                            <option value="10">October</option>
+                                            <option value="11">November</option>
+                                            <option value="12">December</option>
+                                        </select>
+                                    </div>
+                                    <div class="flex-1">
+                                        <label class="block text-xs sm:text-sm text-gray-500 mb-1">Year</label>
+                                        <select id="timesheet-year" class="w-full px-2.5 py-1.5 border border-gray-300 rounded-md bg-white text-sm">
+                                            <option value="2023">2023</option>
+                                            <option value="2024">2024</option>
+                                            <option value="2025" selected>2025</option>
+                                            <option value="2026">2026</option>
+                                        </select>
+                                    </div>
+                                    <button onclick="generateTimesheet()" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-4 sm:px-5 py-1.5 rounded-md font-medium transition-colors text-sm">
+                                        Generate CSV
+                                    </button>
+                                </div>
+                                <div id="timesheet-message"></div>
+                            </div>
+
+                            <!-- Generated Timesheets Card -->
+                            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-5">
+                                <h2 class="text-base font-medium text-gray-700 mb-4">Generated Timesheets</h2>
+                                <div class="text-center py-8">
+                                    <p class="text-sm text-gray-500">Click "Generate CSV" above to download a timesheet</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quote Section -->
+            <div class="mt-20 sm:mt-24 max-w-3xl mx-auto">
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-8 sm:p-10">
+                    <svg class="w-8 h-8 text-gray-300 mb-4" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z"></path>
+                    </svg>
+                    <blockquote class="text-base sm:text-lg text-gray-700 leading-relaxed mb-4">
+                        Toggl, Harvest, Clockify—they're all great (not) if you need everything. I didn't. I needed to track client hours and generate timesheets. That's it. Two core features. So I built Timerrr. My perfect little time keeping app. I hope you like it as much as I do.
+                    </blockquote>
+                    <div class="flex items-center gap-3">
+                        <img src="{{ url_for('static', filename='grant-profile.jpg') }}" alt="Grant Bellar" class="w-12 h-12 rounded-full object-cover">
+                        <div>
+                            <div class="font-medium text-gray-900 text-sm">Grant Bellar</div>
+                            <div class="text-xs text-gray-500">Creator of Timerrr</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Demo app state
+        const demoState = {
+            timers: {
+                'Acme Corp': { running: true, startTime: Date.now() - 2580000, notes: '' },
+                'StartupXYZ': { running: false, startTime: null, notes: 'UI updates for mobile app' }
+            },
+            entries: [
+                { id: 1, client: 'Acme Corp', notes: 'PRD review, client call', duration: 42, date: new Date(), rate: 100 },
+                { id: 2, client: 'StartupXYZ', notes: 'Bug fixes and testing', duration: 105, date: new Date(Date.now() - 86400000), rate: 75 },
+                { id: 3, client: 'Acme Corp', notes: 'Feature development', duration: 180, date: new Date(Date.now() - 172800000), rate: 100 }
+            ],
+            timerIntervals: {}
+        };
+
+        function showTab(tabName) {
+            // Hide all content
+            document.querySelectorAll('.demo-content').forEach(content => {
+                content.classList.add('hidden');
+            });
+
+            // Reset all tab styles
+            document.querySelectorAll('.demo-tab').forEach(tab => {
+                tab.classList.remove('border-gray-900', 'text-gray-900', 'font-medium');
+                tab.classList.add('border-transparent', 'text-gray-600');
+            });
+
+            // Show selected content
+            document.getElementById('content-' + tabName).classList.remove('hidden');
+
+            // Style active tab
+            const activeTab = document.getElementById('tab-' + tabName);
+            activeTab.classList.remove('border-transparent', 'text-gray-600');
+            activeTab.classList.add('border-gray-900', 'text-gray-900', 'font-medium');
+
+            // Refresh views
+            if (tabName === 'entries') {
+                renderEntries();
+            } else if (tabName === 'timer') {
+                renderTimers();
+            }
+        }
+
+        // Timer functions
+        function toggleTimer(clientName) {
+            const timer = demoState.timers[clientName];
+
+            if (timer.running) {
+                // Stop timer
+                timer.running = false;
+                const duration = Math.floor((Date.now() - timer.startTime) / 1000);
+
+                // Add entry
+                demoState.entries.unshift({
+                    id: Date.now(),
+                    client: clientName,
+                    notes: timer.notes || 'No description',
+                    duration: duration,
+                    date: new Date(),
+                    rate: clientName === 'Acme Corp' ? 100 : 75
+                });
+
+                timer.notes = '';
+                clearInterval(demoState.timerIntervals[clientName]);
+                delete demoState.timerIntervals[clientName];
+            } else {
+                // Start timer
+                timer.running = true;
+                timer.startTime = Date.now();
+                demoState.timerIntervals[clientName] = setInterval(() => updateTimerDisplay(clientName), 1000);
+            }
+
+            renderTimers();
+        }
+
+        function updateTimerDisplay(clientName) {
+            const timer = demoState.timers[clientName];
+            if (!timer.running) return;
+
+            const elapsed = Math.floor((Date.now() - timer.startTime) / 1000);
+            const minutes = Math.floor(elapsed / 60);
+            const seconds = elapsed % 60;
+            const display = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+
+            const card = document.querySelector(`[data-client="${clientName}"]`);
+            if (card) {
+                card.querySelector('.timer-display').textContent = display;
+            }
+        }
+
+        function updateNotes(clientName, notes) {
+            demoState.timers[clientName].notes = notes;
+        }
+
+        function renderTimers() {
+            const container = document.getElementById('timers-container');
+            container.innerHTML = '';
+
+            Object.keys(demoState.timers).forEach(clientName => {
+                const timer = demoState.timers[clientName];
+                const elapsed = timer.running ? Math.floor((Date.now() - timer.startTime) / 1000) : 0;
+                const minutes = Math.floor(elapsed / 60);
+                const seconds = elapsed % 60;
+                const display = timer.running ? `${minutes}:${seconds.toString().padStart(2, '0')}` : '0:00';
+
+                const card = document.createElement('div');
+                card.className = 'bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-5';
+                card.setAttribute('data-client', clientName);
+                card.innerHTML = `
+                    <div class="flex flex-col gap-2">
+                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                            <div class="flex items-center gap-3">
+                                <h2 class="text-base font-medium text-gray-700">${clientName}</h2>
+                                ${timer.running ? `
+                                <div class="flex items-center gap-1.5">
+                                    <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                                    <span class="text-sm text-gray-500">timer running</span>
+                                </div>` : ''}
+                            </div>
+                            <div class="timer-display text-2xl sm:text-3xl font-semibold">${display}</div>
+                        </div>
+                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                            <input type="text" ${timer.running ? '' : 'disabled'}
+                                value="${timer.notes}"
+                                oninput="updateNotes('${clientName}', this.value)"
+                                class="w-full sm:w-1/3 px-2.5 py-1.5 border border-gray-200 rounded-md text-sm text-gray-700 placeholder-gray-400 bg-gray-50"
+                                placeholder="What are you working on?">
+                            <button onclick="toggleTimer('${clientName}')"
+                                class="w-full sm:w-auto ${timer.running ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700'} text-white px-4 sm:px-5 py-2 rounded-lg font-medium transition-colors text-sm">
+                                ${timer.running ? 'Clock out' : 'Clock in'}
+                            </button>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // Entries functions
+        function renderEntries(filterClient = '') {
+            const container = document.getElementById('entries-list');
+            const entries = filterClient ? demoState.entries.filter(e => e.client === filterClient) : demoState.entries;
+
+            if (entries.length === 0) {
+                container.innerHTML = '<div class="text-center py-8"><p class="text-sm text-gray-500">No entries found</p></div>';
+                document.getElementById('entries-count').textContent = 'Showing 0-0 of 0 entries';
+                return;
+            }
+
+            container.innerHTML = entries.map(entry => {
+                const minutes = Math.floor(entry.duration / 60);
+                const seconds = entry.duration % 60;
+                const timeStr = minutes > 0 ? `${minutes}:${seconds.toString().padStart(2, '0')}` : `0:${seconds.toString().padStart(2, '0')}`;
+                const dateStr = entry.date.toLocaleString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true });
+
+                return `
+                    <div class="p-4 border-b border-gray-200">
+                        <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-2">
+                            <h3 class="font-medium text-gray-900">${entry.client}</h3>
+                            <div class="text-right">
+                                <div class="text-base font-semibold">${timeStr}</div>
+                            </div>
+                        </div>
+                        <div class="text-sm text-gray-600 mb-2">${entry.notes}</div>
+                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                            <div class="text-xs text-gray-500">${dateStr}</div>
+                            <div class="flex gap-3">
+                                <button class="text-blue-600 hover:text-blue-700 text-xs sm:text-sm font-medium">Edit</button>
+                                <button onclick="deleteEntry(${entry.id})" class="text-red-600 hover:text-red-700 text-xs sm:text-sm font-medium">Delete</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            document.getElementById('entries-count').textContent = `Showing 1-${entries.length} of ${entries.length} entries`;
+        }
+
+        function applyEntriesFilter() {
+            const clientFilter = document.getElementById('entries-client-filter').value;
+            renderEntries(clientFilter);
+        }
+
+        function deleteEntry(id) {
+            demoState.entries = demoState.entries.filter(e => e.id !== id);
+            renderEntries();
+        }
+
+        // Timesheet functions
+        function generateTimesheet() {
+            const client = document.getElementById('timesheet-client').value;
+            const month = document.getElementById('timesheet-month').value;
+            const year = document.getElementById('timesheet-year').value;
+
+            if (!client) {
+                alert('Please select a client');
+                return;
+            }
+
+            // Filter entries for selected client and month
+            const monthNum = parseInt(month) - 1;
+            const entries = demoState.entries.filter(e => {
+                const entryDate = new Date(e.date);
+                return e.client === client &&
+                       entryDate.getMonth() === monthNum &&
+                       entryDate.getFullYear() === parseInt(year);
+            });
+
+            // Generate CSV
+            const csv = generateCSV(client, entries);
+            downloadCSV(csv, `${client}-${month}-${year}.csv`);
+
+            // Show success message
+            document.getElementById('timesheet-message').innerHTML = `
+                <div class="mt-3 p-3 bg-green-50 border border-green-200 rounded-md">
+                    <p class="text-sm text-green-700">✓ Timesheet generated successfully!</p>
+                </div>
+            `;
+
+            setTimeout(() => {
+                document.getElementById('timesheet-message').innerHTML = '';
+            }, 3000);
+        }
+
+        function generateCSV(client, entries) {
+            let csv = 'Date,Client,Description,Duration (hours),Rate,Amount\n';
+            let totalHours = 0;
+            let totalAmount = 0;
+
+            entries.forEach(entry => {
+                const hours = (entry.duration / 3600).toFixed(2);
+                const amount = (hours * entry.rate).toFixed(2);
+                totalHours += parseFloat(hours);
+                totalAmount += parseFloat(amount);
+
+                const dateStr = entry.date.toLocaleDateString('en-US');
+                csv += `${dateStr},"${client}","${entry.notes}",${hours},${entry.rate},${amount}\n`;
+            });
+
+            csv += `\nTotal,,,${totalHours.toFixed(2)},,${totalAmount.toFixed(2)}\n`;
+            return csv;
+        }
+
+        function downloadCSV(csv, filename) {
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', function() {
+            renderTimers();
+            renderEntries();
+
+            // Start intervals for running timers
+            Object.keys(demoState.timers).forEach(clientName => {
+                if (demoState.timers[clientName].running) {
+                    demoState.timerIntervals[clientName] = setInterval(() => updateTimerDisplay(clientName), 1000);
+                }
+            });
+
+            // Populate client filter dropdown
+            const clientFilter = document.getElementById('entries-client-filter');
+            const timesheetClient = document.getElementById('timesheet-client');
+            const clients = ['Acme Corp', 'StartupXYZ'];
+
+            clients.forEach(client => {
+                const option = document.createElement('option');
+                option.value = client;
+                option.textContent = client;
+                clientFilter.appendChild(option.cloneNode(true));
+                timesheetClient.appendChild(option);
+            });
+        });
+    </script>
+</body>
+</html>
