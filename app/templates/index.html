@@ -25,7 +25,7 @@
     <header class="bg-white border-b border-gray-200">
         <div class="max-w-6xl mx-auto px-4 sm:px-6">
             <div class="flex items-center justify-between h-14">
-                <a href="/" class="text-lg font-semibold">Timerrr</a>
+                <a href="/" class="text-2xl font-bold">timerrr<span class="text-green-500 text-3xl">.</span></a>
                 <div class="flex items-center gap-4">
                     <a href="{{ url_for('auth.login') }}" class="text-sm text-gray-600 hover:text-gray-900 transition-colors">Log in</a>
                     <a href="{{ url_for('auth.register') }}" class="px-4 py-1.5 bg-gray-900 hover:bg-gray-800 text-white rounded-md font-medium transition-colors text-sm">Sign up</a>
@@ -38,25 +38,26 @@
     <main class="min-h-screen">
         <div class="max-w-4xl mx-auto px-4 sm:px-6 py-16 sm:py-24 text-center relative">
             <!-- Diagonal Banner -->
-            <div class="absolute top-8 right-0 sm:right-12 transform rotate-12 bg-yellow-400 text-gray-900 px-4 py-2 rounded-lg shadow-lg font-semibold text-sm whitespace-nowrap">
-                preserve your sanity! 🤯
+            <div class="absolute top-8 right-0 sm:right-12 transform rotate-12 bg-green-400 text-gray-900 px-4 py-2 rounded-lg shadow-lg font-semibold text-sm whitespace-nowrap">
+                preserve your sanity! 😌
             </div>
 
             <!-- Main Headline -->
             <h1 class="text-4xl sm:text-5xl lg:text-6xl font-semibold mb-6 text-gray-900">
-                Dead Simple Time Tracking.<br>For Freelancers.
+                <span class="sm:hidden">1-Click Time Tracking<br>for Solo Freelancers</span>
+                <span class="hidden sm:inline">The 1-Click Time Tracker for Solo Freelancers Who <br>Hate Time Tracking.</span>
             </h1>
 
             <!-- Subheadline -->
             <p class="text-lg sm:text-xl text-gray-600 mb-10 max-w-2xl mx-auto">
-                Track time for your clients with a clean interface that stays out of your way. Generate timesheets. Just what you need.
+                Stop losing billable hours to time tracking itself. No onboarding flow. No feature tour. No overdone UI.
             </p>
 
             <!-- CTA Buttons -->
             <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
                 <a href="{{ url_for('auth.register') }}"
                    class="w-full sm:w-auto px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors text-base">
-                    Start a timer in under 20 seconds
+                    Start tracking in under 20 seconds
                 </a>
             </div>
 
@@ -69,8 +70,8 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                         </svg>
                     </div>
-                    <h3 class="text-lg font-semibold mb-2 text-gray-900">One-click tracking</h3>
-                    <p class="text-sm text-gray-600">Clock in and out instantly. No complicated forms or project hierarchies.</p>
+                    <h3 class="text-lg font-semibold mb-2 text-gray-900">Start Billing in Literally 1 Click</h3>
+                    <p class="text-sm text-gray-600">Name your client. Clock in. No complicated forms or project hierarchies.</p>
                 </div>
 
                 <!-- Feature 2 -->
@@ -80,8 +81,8 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
                         </svg>
                     </div>
-                    <h3 class="text-lg font-semibold mb-2 text-gray-900">Real-time multi-device sync</h3>
-                    <p class="text-sm text-gray-600">Clock in on your laptop, clock out on your phone. All your devices stay in sync instantly.</p>
+                    <h3 class="text-lg font-semibold mb-2 text-gray-900">Your Time Syncs Instantly</h3>
+                    <p class="text-sm text-gray-600">Start on laptop at the coffee shop. Stop on phone walking out.</p>
                 </div>
 
                 <!-- Feature 3 -->
@@ -91,8 +92,8 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                         </svg>
                     </div>
-                    <h3 class="text-lg font-semibold mb-2 text-gray-900">Automatic timesheets</h3>
-                    <p class="text-sm text-gray-600">Generate professional timesheets with your logged hours. No manual calculations.</p>
+                    <h3 class="text-lg font-semibold mb-2 text-gray-900">Invoice-Ready Timesheets in 3 Seconds</h3>
+                    <p class="text-sm text-gray-600">End of month panic? Gone. Export PDF timesheets your clients actually understand.</p>
                 </div>
             </div>
 
@@ -229,10 +230,13 @@
                     </blockquote>
                     <div class="flex items-center gap-3">
                         <img src="{{ url_for('static', filename='grant-profile.jpg') }}" alt="Grant Bellar" class="w-12 h-12 rounded-full object-cover">
-                        <div>
-                            <div class="font-medium text-gray-900 text-sm">Grant Bellar</div>
-                            <div class="text-xs text-gray-500">Creator of Timerrr</div>
+                        <div class="flex-1">
+                            <div class="font-medium text-gray-900 text-sm text-left">Grant Bellar</div>
+                            <div class="text-xs text-gray-500 transition-all duration-500 ease-in-out text-left" id="creator-title">Creator of Timerrr</div>
                         </div>
+                        <svg class="w-8 h-8 text-gray-300 mb-4 ml-auto" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M9.983 3v7.391c0 5.704-3.731 9.57-8.983 10.609l-.995-2.151c2.432-.917 3.995-3.638 3.995-5.849H0V3h9.983zm14.017 0v7.391c0 5.704-3.748 9.57-9 10.609l-.996-2.151c2.433-.917 3.996-3.638 3.996-5.849H14V3h9.983z"></path>
+                        </svg>
                     </div>
                 </div>
             </div>
@@ -240,10 +244,57 @@
     </main>
 
     <script>
+        // Fun rotating titles for creator
+        const creatorTitles = [
+            "Creator of Timerrr",
+            "Solo Freelancer",
+            "Tinkerer",
+            "Dude",
+            "Spreadsheet Survivor",
+            "Anti-Feature Advocate",
+            "Still a Dude",
+            "Halloween Decoraterer",
+        ];
+        
+        let currentTitleIndex = 0;
+        let titleRotationStarted = false;
+        let titleRotationInterval = null;
+        
+        function startTitleRotation() {
+            if (!titleRotationStarted) {
+                titleRotationStarted = true;
+                titleRotationInterval = setInterval(rotateTitles, 6000);
+            }
+        }
+        
+        function rotateTitles() {
+            const titleElement = document.getElementById('creator-title');
+            if (titleElement) {
+                // Slide up and fade out
+                titleElement.style.transform = 'translateY(-10px)';
+                titleElement.style.opacity = '0';
+                
+                setTimeout(() => {
+                    // Change text while invisible
+                    currentTitleIndex = (currentTitleIndex + 1) % creatorTitles.length;
+                    titleElement.textContent = creatorTitles[currentTitleIndex];
+                    
+                    // Start from below and slide up while fading in
+                    titleElement.style.transform = 'translateY(10px)';
+                    
+                    setTimeout(() => {
+                        // Slide to final position and fade in
+                        titleElement.style.transform = 'translateY(0)';
+                        titleElement.style.opacity = '1';
+                    }, 100);
+                }, 250);
+            }
+        }
+
         // Demo app state
         const demoState = {
             timers: {
-                'Acme Corp': { running: true, startTime: Date.now() - 2580000, notes: '' },
+                'Acme Corp': { running: false, startTime: null, notes: '' },
                 'StartupXYZ': { running: false, startTime: null, notes: 'UI updates for mobile app' }
             },
             entries: [
@@ -308,7 +359,7 @@
                 // Start timer
                 timer.running = true;
                 timer.startTime = Date.now();
-                demoState.timerIntervals[clientName] = setInterval(() => updateTimerDisplay(clientName), 1000);
+                demoState.timerIntervals[clientName] = setInterval(() => updateTimerDisplay(clientName), 60000);
             }
 
             renderTimers();
@@ -319,9 +370,10 @@
             if (!timer.running) return;
 
             const elapsed = Math.floor((Date.now() - timer.startTime) / 1000);
-            const minutes = Math.floor(elapsed / 60);
-            const seconds = elapsed % 60;
-            const display = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            const totalMinutes = Math.floor(elapsed / 60);
+            const hours = Math.floor(totalMinutes / 60);
+            const minutes = totalMinutes % 60;
+            const display = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
 
             const card = document.querySelector(`[data-client="${clientName}"]`);
             if (card) {
@@ -340,9 +392,10 @@
             Object.keys(demoState.timers).forEach(clientName => {
                 const timer = demoState.timers[clientName];
                 const elapsed = timer.running ? Math.floor((Date.now() - timer.startTime) / 1000) : 0;
-                const minutes = Math.floor(elapsed / 60);
-                const seconds = elapsed % 60;
-                const display = timer.running ? `${minutes}:${seconds.toString().padStart(2, '0')}` : '0:00';
+                const totalMinutes = Math.floor(elapsed / 60);
+                const hours = Math.floor(totalMinutes / 60);
+                const minutes = totalMinutes % 60;
+                const display = timer.running ? `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}` : '00:00';
 
                 const card = document.createElement('div');
                 card.className = 'bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-5';
@@ -367,7 +420,7 @@
                                 class="w-full sm:w-1/3 px-2.5 py-1.5 border border-gray-200 rounded-md text-sm text-gray-700 placeholder-gray-400 bg-gray-50"
                                 placeholder="What are you working on?">
                             <button onclick="toggleTimer('${clientName}')"
-                                class="w-full sm:w-auto ${timer.running ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700'} text-white px-4 sm:px-5 py-2 rounded-lg font-medium transition-colors text-sm">
+                                class="w-full sm:w-auto ${timer.running ? 'bg-red-600 hover:bg-red-700' : 'bg-blue-600 hover:bg-blue-700'} text-white px-4 sm:px-5 py-2 rounded-lg font-medium transition-colors text-sm">
                                 ${timer.running ? 'Clock out' : 'Clock in'}
                             </button>
                         </div>
@@ -389,9 +442,10 @@
             }
 
             container.innerHTML = entries.map(entry => {
-                const minutes = Math.floor(entry.duration / 60);
-                const seconds = entry.duration % 60;
-                const timeStr = minutes > 0 ? `${minutes}:${seconds.toString().padStart(2, '0')}` : `0:${seconds.toString().padStart(2, '0')}`;
+                const totalMinutes = Math.floor(entry.duration / 60);
+                const hours = Math.floor(totalMinutes / 60);
+                const minutes = totalMinutes % 60;
+                const timeStr = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
                 const dateStr = entry.date.toLocaleString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true });
 
                 return `
@@ -492,6 +546,21 @@
             window.URL.revokeObjectURL(url);
         }
 
+        // Scroll detection for title rotation
+        function handleScroll() {
+            const quoteSection = document.querySelector('.mt-20.sm\\:mt-24.max-w-3xl');
+            if (quoteSection) {
+                const rect = quoteSection.getBoundingClientRect();
+                const isVisible = rect.top <= window.innerHeight && rect.bottom >= 0;
+                
+                if (isVisible) {
+                    startTitleRotation();
+                    // Remove scroll listener once started
+                    window.removeEventListener('scroll', handleScroll);
+                }
+            }
+        }
+
         // Initialize on load
         document.addEventListener('DOMContentLoaded', function() {
             renderTimers();
@@ -500,9 +569,14 @@
             // Start intervals for running timers
             Object.keys(demoState.timers).forEach(clientName => {
                 if (demoState.timers[clientName].running) {
-                    demoState.timerIntervals[clientName] = setInterval(() => updateTimerDisplay(clientName), 1000);
+                    demoState.timerIntervals[clientName] = setInterval(() => updateTimerDisplay(clientName), 60000);
                 }
             });
+
+            // Add scroll listener for title rotation
+            window.addEventListener('scroll', handleScroll);
+            // Also check on load in case quote section is already visible
+            handleScroll();
 
             // Populate client filter dropdown
             const clientFilter = document.getElementById('entries-client-filter');
