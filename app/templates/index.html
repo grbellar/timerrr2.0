@@ -3,7 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Timerrr - Simple Time Tracking</title>
+    <title>Timerrr - Simple Time Tracking for Solo Freelancers</title>
+    
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="The 1-click time tracker for solo freelancers who hate time tracking. Stop losing billable hours to time tracking itself. No onboarding flow. No feature tour. No overdone UI.">
+    <meta name="author" content="Grant Bellar">
+    <link rel="canonical" href="https://timerrr.com/">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://timerrr.com/">
+    <meta property="og:title" content="Timerrr - The 1-Click Time Tracker for Solo Freelancers">
+    <meta property="og:description" content="Stop losing billable hours to time tracking itself. No onboarding flow. No feature tour. No overdone UI.">
+    <meta property="og:image" content="https://timerrr.com/static/preview.jpg">
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://timerrr.com/">
+    <meta property="twitter:title" content="Timerrr - The 1-Click Time Tracker for Solo Freelancers">
+    <meta property="twitter:description" content="Stop losing billable hours to time tracking itself. No onboarding flow. No feature tour. No overdone UI.">
+    <meta property="twitter:image" content="https://timerrr.com/static/preview.jpg">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicon-32x32.png') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -18,6 +41,34 @@
                 }
             }
         }
+    </script>
+    
+    <!-- JSON-LD Structured Data -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "Timerrr",
+        "description": "The 1-click time tracker for solo freelancers who hate time tracking. Start billing in literally 1 click.",
+        "url": "https://timerrr.com",
+        "applicationCategory": "BusinessApplication",
+        "operatingSystem": "Web Browser",
+        "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+        },
+        "creator": {
+            "@type": "Person",
+            "name": "Grant Bellar"
+        },
+        "featureList": [
+            "1-click time tracking",
+            "Real-time sync across devices", 
+            "Invoice-ready timesheets",
+            "Simple client management"
+        ]
+    }
     </script>
 </head>
 <body class="font-inter bg-gray-50 text-gray-900">

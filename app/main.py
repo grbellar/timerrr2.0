@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, redirect, url_for
+from flask import Blueprint, render_template, redirect, url_for, send_from_directory, current_app
 from flask_login import login_required, current_user
 from app.models import Client
 
@@ -46,3 +46,11 @@ def settings():
 @login_required
 def api_hello():
     return {'message': 'Flask API is running!', 'user': current_user.email}
+
+@main.route('/robots.txt')
+def robots_txt():
+    return send_from_directory(current_app.static_folder, 'robots.txt')
+
+@main.route('/sitemap.xml')
+def sitemap_xml():
+    return send_from_directory(current_app.static_folder, 'sitemap.xml')
