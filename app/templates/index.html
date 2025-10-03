@@ -160,7 +160,7 @@
                     <!-- Demo Header with Tabs -->
                     <div class="border-b border-gray-200 px-4 sm:px-6">
                         <div class="flex items-center justify-between h-14">
-                            <div class="text-lg font-semibold">Timerrr</div>
+                            <div class="text-lg font-semibold">timerrr<span class="text-green-500 text-3xl">.</span></div>
                             <nav class="flex items-center space-x-5 lg:space-x-6">
                                 <button onclick="showTab('timer')" id="tab-timer" class="demo-tab text-sm font-medium transition-colors pb-3 border-b-2 border-gray-900 text-gray-900">Timer</button>
                                 <button onclick="showTab('entries')" id="tab-entries" class="demo-tab text-sm text-gray-600 hover:text-gray-900 transition-colors pb-3 border-b-2 border-transparent">Entries</button>
@@ -180,37 +180,57 @@
 
                         <!-- Entries Tab -->
                         <div id="content-entries" class="demo-content hidden">
-                            <!-- Filters -->
-                            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-5 mb-4">
+                            <!-- Filters Section -->
+                            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-5 mb-4 sm:mb-5">
                                 <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+                                    <!-- Date Inputs - Stack on mobile, inline on desktop -->
                                     <div class="flex flex-col sm:flex-row sm:items-center gap-3 flex-1">
-                                        <input type="date" placeholder="mm/dd/yyyy"
-                                            class="flex-1 sm:flex-initial px-2.5 py-1.5 border border-gray-300 rounded-md text-sm bg-white">
+                                        <div class="flex items-center space-x-2 flex-1 sm:flex-initial">
+                                            <input type="date" id="demo-start-date" placeholder="mm/dd/yyyy"
+                                                class="flex-1 sm:flex-initial px-2.5 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm">
+                                        </div>
+
                                         <span class="hidden sm:block text-gray-500 text-sm">to</span>
-                                        <input type="date" placeholder="mm/dd/yyyy"
-                                            class="flex-1 sm:flex-initial px-2.5 py-1.5 border border-gray-300 rounded-md text-sm bg-white">
-                                        <select id="entries-client-filter" class="flex-1 sm:flex-initial px-2.5 py-1.5 border border-gray-300 rounded-md text-sm bg-white">
+
+                                        <div class="flex items-center space-x-2 flex-1 sm:flex-initial">
+                                            <input type="date" id="demo-end-date" placeholder="mm/dd/yyyy"
+                                                class="flex-1 sm:flex-initial px-2.5 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm">
+                                        </div>
+
+                                        <select id="demo-client-filter" class="flex-1 sm:flex-initial px-2.5 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-sm">
                                             <option value="">All Clients</option>
                                         </select>
                                     </div>
-                                    <button onclick="applyEntriesFilter()" class="px-4 py-1.5 bg-gray-900 hover:bg-gray-800 text-white rounded-md font-medium transition-colors text-sm">
-                                        Apply
-                                    </button>
+
+                                    <!-- Client Dropdown and Apply Button - Full width on mobile -->
+                                    <div class="flex gap-3">
+                                        <button id="demo-apply-filters" class="px-4 py-1.5 bg-gray-900 hover:bg-gray-800 text-white rounded-md font-medium transition-colors text-sm">
+                                            Apply
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
 
                             <!-- Entries List -->
-                            <div id="entries-list" class="bg-white rounded-lg shadow-sm border border-gray-200">
-                                <!-- Entries will be rendered here dynamically -->
+                            <div id="demo-entries-container" class="bg-white rounded-lg shadow-sm border border-gray-200">
+                                <!-- Entries will be loaded here dynamically -->
                             </div>
 
                             <!-- Pagination -->
-                            <div class="mt-4 flex flex-col sm:flex-row items-center justify-between gap-3">
-                                <div id="entries-count" class="text-sm text-gray-600">Showing 0-0 of 0 entries</div>
+                            <div id="demo-pagination" class="mt-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+                                <div class="text-sm text-gray-600">
+                                    Showing <span id="demo-showing-from">0</span>-<span id="demo-showing-to">0</span> of <span id="demo-total-entries">0</span> entries
+                                </div>
                                 <div class="flex items-center gap-2">
-                                    <button disabled class="px-3 py-1 border border-gray-300 rounded-md text-sm opacity-50">Previous</button>
-                                    <span class="px-3 py-1 text-sm">Page 1 of 1</span>
-                                    <button disabled class="px-3 py-1 border border-gray-300 rounded-md text-sm opacity-50">Next</button>
+                                    <button id="demo-prev-page" class="px-3 py-1 border border-gray-300 rounded-md text-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                                        Previous
+                                    </button>
+                                    <span class="px-3 py-1 text-sm">
+                                        Page <span id="demo-current-page">1</span> of <span id="demo-total-pages">1</span>
+                                    </span>
+                                    <button id="demo-next-page" class="px-3 py-1 border border-gray-300 rounded-md text-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                                        Next
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -413,7 +433,7 @@
                 // Start timer
                 timer.running = true;
                 timer.startTime = Date.now();
-                demoState.timerIntervals[clientName] = setInterval(() => updateTimerDisplay(clientName), 60000);
+                demoState.timerIntervals[clientName] = setInterval(() => updateTimerDisplay(clientName), 1000);
             }
 
             renderTimers();
@@ -424,10 +444,16 @@
             if (!timer.running) return;
 
             const elapsed = Math.floor((Date.now() - timer.startTime) / 1000);
-            const totalMinutes = Math.floor(elapsed / 60);
-            const hours = Math.floor(totalMinutes / 60);
-            const minutes = totalMinutes % 60;
-            const display = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+            const hours = Math.floor(elapsed / 3600);
+            const minutes = Math.floor((elapsed % 3600) / 60);
+            const seconds = elapsed % 60;
+            
+            let display;
+            if (hours > 0) {
+                display = `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            } else {
+                display = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            }
 
             const card = document.querySelector(`[data-client="${clientName}"]`);
             if (card) {
@@ -446,10 +472,20 @@
             Object.keys(demoState.timers).forEach(clientName => {
                 const timer = demoState.timers[clientName];
                 const elapsed = timer.running ? Math.floor((Date.now() - timer.startTime) / 1000) : 0;
-                const totalMinutes = Math.floor(elapsed / 60);
-                const hours = Math.floor(totalMinutes / 60);
-                const minutes = totalMinutes % 60;
-                const display = timer.running ? `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}` : '00:00';
+                const hours = Math.floor(elapsed / 3600);
+                const minutes = Math.floor((elapsed % 3600) / 60);
+                const seconds = elapsed % 60;
+                
+                let display;
+                if (timer.running) {
+                    if (hours > 0) {
+                        display = `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                    } else {
+                        display = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                    }
+                } else {
+                    display = '00:00';
+                }
 
                 const card = document.createElement('div');
                 card.className = 'bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-5';
@@ -465,7 +501,7 @@
                                     <span class="text-sm text-gray-500">timer running</span>
                                 </div>` : ''}
                             </div>
-                            <div class="timer-display text-2xl sm:text-3xl font-semibold">${display}</div>
+                            <div class="timer-display text-2xl sm:text-3xl font-semibold ${timer.running ? 'text-green-600' : 'text-gray-900'}">${display}</div>
                         </div>
                         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                             <input type="text" ${timer.running ? '' : 'disabled'}
@@ -474,7 +510,7 @@
                                 class="w-full sm:w-1/3 px-2.5 py-1.5 border border-gray-200 rounded-md text-sm text-gray-700 placeholder-gray-400 bg-gray-50"
                                 placeholder="What are you working on?">
                             <button onclick="toggleTimer('${clientName}')"
-                                class="w-full sm:w-auto ${timer.running ? 'bg-red-600 hover:bg-red-700' : 'bg-blue-600 hover:bg-blue-700'} text-white px-4 sm:px-5 py-2 rounded-lg font-medium transition-colors text-sm">
+                                class="w-full sm:w-auto ${timer.running ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700'} text-white px-4 sm:px-5 py-2 rounded-lg font-medium transition-colors text-sm">
                                 ${timer.running ? 'Clock out' : 'Clock in'}
                             </button>
                         </div>
@@ -484,14 +520,18 @@
             });
         }
 
-        // Entries functions
+        // Entries functions - matching exact structure from entries.html
         function renderEntries(filterClient = '') {
-            const container = document.getElementById('entries-list');
+            const container = document.getElementById('demo-entries-container');
             const entries = filterClient ? demoState.entries.filter(e => e.client === filterClient) : demoState.entries;
 
             if (entries.length === 0) {
-                container.innerHTML = '<div class="text-center py-8"><p class="text-sm text-gray-500">No entries found</p></div>';
-                document.getElementById('entries-count').textContent = 'Showing 0-0 of 0 entries';
+                container.innerHTML = `
+                    <div class="text-center py-12">
+                        <p class="text-gray-500 text-sm">No entries found</p>
+                    </div>
+                `;
+                updateDemoPagination(0, 0, 0);
                 return;
             }
 
@@ -503,34 +543,51 @@
                 const dateStr = entry.date.toLocaleString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true });
 
                 return `
-                    <div class="p-4 border-b border-gray-200">
-                        <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-2">
-                            <h3 class="font-medium text-gray-900">${entry.client}</h3>
-                            <div class="text-right">
-                                <div class="text-base font-semibold">${timeStr}</div>
+                        <div class="p-4 sm:p-5 border-b border-gray-200 hover:bg-gray-50 transition-colors" data-entry-id="${entry.id}">
+                            <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                                <!-- Entry Details -->
+                                <div class="flex-1">
+                                    <div class="flex items-center gap-3 mb-0.5">
+                                        <h3 class="font-semibold text-sm sm:text-base">${entry.client}</h3>
+                                    </div>
+                                    <div class="text-xs sm:text-sm text-gray-600">${entry.notes || 'No description'}</div>
+                                    <div class="text-xs text-gray-500 mt-0.5">${dateStr}</div>
+                                </div>
+
+                                <!-- Time and Actions -->
+                                <div class="flex flex-row items-center justify-between sm:flex-col sm:items-end gap-2 sm:gap-3">
+                                    <div class="text-lg sm:text-xl font-semibold order-1 sm:order-none">${timeStr}</div>
+                                    <div class="flex items-center space-x-3 sm:space-x-2 order-2 sm:order-none">
+                                        <button class="text-green-600 hover:text-green-700 text-xs sm:text-sm font-medium">Edit</button>
+                                        <button onclick="deleteDemoEntry(${entry.id})" class="text-red-600 hover:text-red-700 text-xs sm:text-sm font-medium">Delete</button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                        <div class="text-sm text-gray-600 mb-2">${entry.notes}</div>
-                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                            <div class="text-xs text-gray-500">${dateStr}</div>
-                            <div class="flex gap-3">
-                                <button class="text-blue-600 hover:text-blue-700 text-xs sm:text-sm font-medium">Edit</button>
-                                <button onclick="deleteEntry(${entry.id})" class="text-red-600 hover:text-red-700 text-xs sm:text-sm font-medium">Delete</button>
-                            </div>
-                        </div>
-                    </div>
-                `;
+                    `;
             }).join('');
 
-            document.getElementById('entries-count').textContent = `Showing 1-${entries.length} of ${entries.length} entries`;
+            updateDemoPagination(1, entries.length, entries.length);
         }
 
-        function applyEntriesFilter() {
-            const clientFilter = document.getElementById('entries-client-filter').value;
+        function updateDemoPagination(from, to, total) {
+            document.getElementById('demo-showing-from').textContent = from;
+            document.getElementById('demo-showing-to').textContent = to;
+            document.getElementById('demo-total-entries').textContent = total;
+            document.getElementById('demo-current-page').textContent = 1;
+            document.getElementById('demo-total-pages').textContent = 1;
+            
+            // Update pagination buttons
+            document.getElementById('demo-prev-page').disabled = true;
+            document.getElementById('demo-next-page').disabled = true;
+        }
+
+        function applyDemoEntriesFilter() {
+            const clientFilter = document.getElementById('demo-client-filter').value;
             renderEntries(clientFilter);
         }
 
-        function deleteEntry(id) {
+        function deleteDemoEntry(id) {
             demoState.entries = demoState.entries.filter(e => e.id !== id);
             renderEntries();
         }
@@ -623,7 +680,7 @@
             // Start intervals for running timers
             Object.keys(demoState.timers).forEach(clientName => {
                 if (demoState.timers[clientName].running) {
-                    demoState.timerIntervals[clientName] = setInterval(() => updateTimerDisplay(clientName), 60000);
+                    demoState.timerIntervals[clientName] = setInterval(() => updateTimerDisplay(clientName), 1000);
                 }
             });
 
@@ -632,8 +689,8 @@
             // Also check on load in case quote section is already visible
             handleScroll();
 
-            // Populate client filter dropdown
-            const clientFilter = document.getElementById('entries-client-filter');
+            // Populate client filter dropdowns
+            const demoClientFilter = document.getElementById('demo-client-filter');
             const timesheetClient = document.getElementById('timesheet-client');
             const clients = ['Acme Corp', 'StartupXYZ'];
 
@@ -641,9 +698,12 @@
                 const option = document.createElement('option');
                 option.value = client;
                 option.textContent = client;
-                clientFilter.appendChild(option.cloneNode(true));
+                demoClientFilter.appendChild(option.cloneNode(true));
                 timesheetClient.appendChild(option);
             });
+
+            // Add event listeners for demo entries
+            document.getElementById('demo-apply-filters').addEventListener('click', applyDemoEntriesFilter);
         });
     </script>
 </body>
