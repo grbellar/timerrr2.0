@@ -168,6 +168,9 @@ function updateClientLimitUI() {
     const clientsList = document.getElementById('clients-list');
     const clientCount = clientsList.querySelectorAll('[data-client-id]').length;
     const addClientBtn = document.getElementById('add-client-btn');
+
+    if (!addClientBtn) return;  // Safety check
+
     const btnParent = addClientBtn.parentElement;
 
     // Update client count display
@@ -199,7 +202,8 @@ function updateClientLimitUI() {
                     </div>
                 </div>
             `;
-            btnParent.replaceWith(wrapper);
+            // Replace just the button, not its parent container
+            addClientBtn.replaceWith(wrapper);
         }
     } else {
         if (btnParent.classList.contains('group')) {
