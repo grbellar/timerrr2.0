@@ -63,7 +63,12 @@
 
     <!-- Clients Section -->
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-5 mb-8">
-        <h2 class="text-base font-semibold mb-4">Clients</h2>
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="text-base font-semibold">Clients</h2>
+            {% if current_user.tier.value == 'Free' %}
+            <span class="text-xs text-gray-500">{{ clients|length }}/3 clients</span>
+            {% endif %}
+        </div>
 
         <!-- Client List -->
         <div id="clients-list" class="space-y-2 mb-3">
@@ -120,10 +125,27 @@
         </div>
 
         <!-- Add Client Button -->
+        {% if current_user.tier.value == 'Free' and clients|length >= 3 %}
+        <div class="relative inline-block group">
+            <button id="add-client-btn" disabled
+                    class="text-blue-600 text-sm font-medium opacity-50 cursor-not-allowed">
+                + Add Client
+            </button>
+            <div class="absolute bottom-full left-0 mb-2 hidden group-hover:block z-10 w-64">
+                <div class="bg-blue-600 text-white text-xs rounded-lg py-2 px-3 shadow-lg">
+                    Free plan limited to 3 clients. Upgrade to Pro for unlimited clients.
+                    <div class="absolute top-full left-4 -mt-1">
+                        <div class="border-4 border-transparent border-t-blue-600"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% else %}
         <button id="add-client-btn" onclick="showAddClientForm()"
                 class="text-blue-600 hover:text-blue-700 text-sm font-medium">
             + Add Client
         </button>
+        {% endif %}
     </div>
 
     <!-- Footer/Feedback Section -->
@@ -137,8 +159,61 @@
 
 <script>
 
-
+const userTier = "{{ current_user.tier.value }}";
 let editingClientId = null;
+
+function updateClientLimitUI() {
+    if (userTier !== 'Free') return;
+
+    const clientsList = document.getElementById('clients-list');
+    const clientCount = clientsList.querySelectorAll('[data-client-id]').length;
+    const addClientBtn = document.getElementById('add-client-btn');
+    const btnParent = addClientBtn.parentElement;
+
+    // Update client count display
+    const countDisplay = document.querySelector('.text-xs.text-gray-500');
+    if (countDisplay && countDisplay.textContent.includes('/3')) {
+        countDisplay.textContent = `${clientCount}/3 clients`;
+    }
+
+    // Check if at limit
+    const atLimit = clientCount >= 3;
+
+    // Update button state and tooltip
+    if (atLimit) {
+        if (!btnParent.classList.contains('group')) {
+            // Replace button with tooltip wrapper
+            const wrapper = document.createElement('div');
+            wrapper.className = 'relative inline-block group';
+            wrapper.innerHTML = `
+                <button id="add-client-btn" disabled
+                        class="text-blue-600 text-sm font-medium opacity-50 cursor-not-allowed">
+                    + Add Client
+                </button>
+                <div class="absolute bottom-full left-0 mb-2 hidden group-hover:block z-10 w-64">
+                    <div class="bg-blue-600 text-white text-xs rounded-lg py-2 px-3 shadow-lg">
+                        Free plan limited to 3 clients. Upgrade to Pro for unlimited clients.
+                        <div class="absolute top-full left-4 -mt-1">
+                            <div class="border-4 border-transparent border-t-blue-600"></div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            btnParent.replaceWith(wrapper);
+        }
+    } else {
+        if (btnParent.classList.contains('group')) {
+            // Replace wrapper with plain button
+            const button = document.createElement('button');
+            button.id = 'add-client-btn';
+            button.onclick = showAddClientForm;
+            button.className = 'text-blue-600 hover:text-blue-700 text-sm font-medium';
+            button.textContent = '+ Add Client';
+            btnParent.replaceWith(button);
+        }
+    }
+
+}
 
 function showAddClientForm() {
     editingClientId = null;
@@ -259,6 +334,7 @@ async function saveClient() {
                 </div>
             `;
             clientsList.appendChild(newClientEl);
+            updateClientLimitUI();
         }
 
         cancelClientForm();
@@ -294,6 +370,8 @@ async function deleteClient(clientId) {
         if (clientsList.children.length === 0) {
             clientsList.innerHTML = '<p id="no-clients-message" class="text-sm text-gray-500">No clients yet</p>';
         }
+
+        updateClientLimitUI();
     } catch (error) {
         alert('Failed to delete client. Please try again.');
         console.error('Error deleting client:', error);

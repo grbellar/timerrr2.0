@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from flask_login import login_required, current_user
-from app.models import db, Client
+from app.models import db, Client, TierEnum
 
 client = Blueprint('client', __name__)
 
@@ -26,6 +26,12 @@ def create_client():
 
     if not name:
         return jsonify({'error': 'Client name is required'}), 400
+
+    # Check client limit for FREE tier users
+    if current_user.tier == TierEnum.FREE:
+        client_count = Client.query.filter_by(user_id=current_user.id).count()
+        if client_count >= 3:
+            return jsonify({'error': 'Free plan limited to 3 clients. Upgrade to Pro for unlimited clients.'}), 403
 
     # Validate hourly rate
     try:
