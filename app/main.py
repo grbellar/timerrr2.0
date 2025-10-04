@@ -39,8 +39,31 @@ def timesheets():
 @main.route('/settings')
 @login_required
 def settings():
+    import stripe
+    import os
+    from datetime import datetime, timezone
+
     clients = Client.query.filter_by(user_id=current_user.id).all()
-    return render_template('settings.html', clients=clients)
+
+    # Check if user has a subscription and if it's canceled but still active
+    subscription_info = None
+    if current_user.stripe_subscription_id:
+        stripe.api_key = os.environ.get('STRIPE_SECRET_KEY', '')
+        if stripe.api_key:
+            try:
+                subscription = stripe.Subscription.retrieve(current_user.stripe_subscription_id)
+                if subscription.cancel_at_period_end:
+                    # Subscription is canceled but still active
+                    period_end = datetime.fromtimestamp(subscription.current_period_end, tz=timezone.utc)
+                    subscription_info = {
+                        'cancel_at_period_end': True,
+                        'period_end': period_end
+                    }
+            except stripe.error.StripeError as e:
+                # Subscription might not exist anymore, ignore error
+                pass
+
+    return render_template('settings.html', clients=clients, subscription_info=subscription_info)
 
 @main.route('/api/hello')
 @login_required

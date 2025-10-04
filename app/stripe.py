@@ -42,6 +42,10 @@ def create_checkout_session():
             cancel_url=request.host_url + 'settings',
             customer_email=current_user.email,
             client_reference_id=str(current_user.id),
+            # Enable promotion codes for marketing campaigns
+            allow_promotion_codes=True,
+            # Collect billing address for tax compliance
+            billing_address_collection='auto',
             metadata={
                 'user_id': str(current_user.id),
                 'user_email': current_user.email
@@ -90,20 +94,43 @@ def stripe_webhook():
         session = event['data']['object']
         logger.info(f"Processing checkout.session.completed for session {session.get('id')}")
 
+        # Verify this is a subscription session
+        if session.get('mode') != 'subscription':
+            logger.info(f"Skipping non-subscription checkout session {session.get('id')}")
+            return jsonify({'received': True}), 200
+
         user_id = session.get('client_reference_id')
         if not user_id:
             logger.error("No client_reference_id in checkout session")
             return jsonify({'error': 'Missing user reference'}), 400
 
+        subscription_id = session.get('subscription')
+        customer_id = session.get('customer')
+
+        if not subscription_id:
+            logger.error(f"No subscription ID in checkout session {session.get('id')}")
+            return jsonify({'error': 'Missing subscription ID'}), 400
+
         try:
             user = User.query.get(int(user_id))
             if user:
+                logger.info(f"Found user {user_id}, current tier: {user.tier}")
+
+                # Update user to Pro tier
                 user.tier = TierEnum.PRO
-                user.stripe_customer_id = session.get('customer')
-                user.stripe_subscription_id = session.get('subscription')
-                user.upgraded_at = datetime.now(timezone.utc)
+                user.stripe_customer_id = customer_id
+                user.stripe_subscription_id = subscription_id
+
+                # Only set upgraded_at if this is their first upgrade
+                if not user.upgraded_at:
+                    user.upgraded_at = datetime.now(timezone.utc)
+
                 db.session.commit()
-                logger.info(f"User {user_id} upgraded to Pro tier successfully")
+                logger.info(f"User {user_id} upgraded to Pro tier successfully (subscription: {subscription_id})")
+
+                # Verify the update
+                updated_user = User.query.get(int(user_id))
+                logger.info(f"User {user_id} tier after update: {updated_user.tier}")
             else:
                 logger.error(f"User {user_id} not found")
                 return jsonify({'error': 'User not found'}), 404
@@ -138,17 +165,52 @@ def stripe_webhook():
         try:
             user = User.query.filter_by(stripe_subscription_id=subscription['id']).first()
             if user:
-                # Check subscription status
-                if subscription['status'] in ['canceled', 'unpaid', 'past_due']:
-                    user.tier = TierEnum.FREE
-                    if subscription['status'] == 'canceled':
+                subscription_status = subscription['status']
+                cancel_at_period_end = subscription.get('cancel_at_period_end', False)
+
+                # Check if subscription is canceled but still active (cancel_at_period_end=True)
+                if cancel_at_period_end:
+                    # Subscription is canceled but still active until period end
+                    # User keeps Pro access until the period ends, then customer.subscription.deleted fires
+                    logger.info(f"Subscription {subscription['id']} is set to cancel at period end. User {user.id} keeps Pro access until then.")
+                    # Don't downgrade yet - wait for customer.subscription.deleted event
+
+                # Statuses that grant Pro access: active, trialing
+                # Stripe subscription statuses: incomplete, incomplete_expired, trialing, active, past_due, canceled, unpaid
+                elif subscription_status in ['active', 'trialing']:
+                    # Grant Pro access
+                    if user.tier != TierEnum.PRO:
+                        user.tier = TierEnum.PRO
+                        if not user.upgraded_at:
+                            user.upgraded_at = datetime.now(timezone.utc)
+                        db.session.commit()
+                        logger.info(f"User {user.id} upgraded to Pro tier (subscription {subscription_status})")
+
+                # Statuses that should downgrade to Free: canceled, unpaid, past_due, incomplete_expired
+                elif subscription_status in ['canceled', 'unpaid', 'incomplete_expired']:
+                    # Remove Pro access - these are terminal/failed states
+                    if user.tier != TierEnum.FREE:
+                        user.tier = TierEnum.FREE
+                        db.session.commit()
+                        logger.info(f"User {user.id} downgraded to Free tier (subscription {subscription_status})")
+
+                    # Clear subscription ID for terminal states
+                    if subscription_status in ['canceled', 'incomplete_expired']:
                         user.stripe_subscription_id = None
-                    db.session.commit()
-                    logger.info(f"User {user.id} downgraded to Free tier (subscription {subscription['status']})")
-                elif subscription['status'] == 'active':
-                    user.tier = TierEnum.PRO
-                    db.session.commit()
-                    logger.info(f"User {user.id} subscription reactivated to Pro tier")
+                        db.session.commit()
+                        logger.info(f"Cleared subscription ID for user {user.id}")
+
+                # past_due: Keep subscription ID but downgrade access while payment is being retried
+                elif subscription_status == 'past_due':
+                    if user.tier != TierEnum.FREE:
+                        user.tier = TierEnum.FREE
+                        db.session.commit()
+                        logger.info(f"User {user.id} downgraded to Free tier (payment past due)")
+
+                # incomplete: Initial state, don't grant access yet but don't downgrade existing
+                elif subscription_status == 'incomplete':
+                    logger.info(f"Subscription {subscription['id']} is incomplete, no action taken")
+
             else:
                 logger.warning(f"No user found for subscription {subscription['id']}")
 
@@ -156,7 +218,40 @@ def stripe_webhook():
             logger.error(f"Error updating user subscription: {e}")
             db.session.rollback()
 
+    elif event['type'] == 'invoice.payment_failed':
+        # Handle failed recurring payments
+        invoice = event['data']['object']
+        subscription_id = invoice.get('subscription')
+
+        if subscription_id:
+            logger.info(f"Processing invoice.payment_failed for subscription {subscription_id}")
+
+            try:
+                user = User.query.filter_by(stripe_subscription_id=subscription_id).first()
+                if user:
+                    # Don't immediately downgrade - Stripe will retry based on your settings
+                    # The subscription.updated event will handle the actual downgrade if retries fail
+                    logger.warning(f"Payment failed for user {user.id}, subscription {subscription_id}. Stripe will retry.")
+                else:
+                    logger.warning(f"No user found for subscription {subscription_id} with failed payment")
+
+            except Exception as e:
+                logger.error(f"Error handling failed payment: {e}")
+
     return jsonify({'received': True}), 200
+
+@stripe_bp.route('/api/stripe/debug/user', methods=['GET'])
+@login_required
+def debug_user():
+    """Debug endpoint to check user tier and Stripe data"""
+    return jsonify({
+        'user_id': current_user.id,
+        'email': current_user.email,
+        'tier': current_user.tier.value,
+        'stripe_customer_id': current_user.stripe_customer_id,
+        'stripe_subscription_id': current_user.stripe_subscription_id,
+        'upgraded_at': current_user.upgraded_at.isoformat() if current_user.upgraded_at else None
+    })
 
 @stripe_bp.route('/stripe/success')
 @login_required
@@ -171,7 +266,22 @@ def payment_success():
             logger.info(f"Payment success for session {session_id}, status: {session.payment_status}")
 
             if session.payment_status == 'paid':
-                flash('Successfully upgraded to Pro! Your account has been updated.', 'success')
+                # Check if user is already PRO (webhook might have already processed)
+                if current_user.tier == TierEnum.PRO:
+                    flash('Successfully upgraded to Pro! Your account has been updated.', 'success')
+                else:
+                    # Fallback: manually update user if webhook hasn't processed yet
+                    try:
+                        current_user.tier = TierEnum.PRO
+                        current_user.stripe_customer_id = session.get('customer')
+                        current_user.stripe_subscription_id = session.get('subscription')
+                        current_user.upgraded_at = datetime.now(timezone.utc)
+                        db.session.commit()
+                        logger.info(f"Fallback: Manually upgraded user {current_user.id} to Pro tier")
+                        flash('Successfully upgraded to Pro! Your account has been updated.', 'success')
+                    except Exception as e:
+                        logger.error(f"Fallback upgrade failed: {e}")
+                        flash('Payment successful! Your account will be updated shortly.', 'info')
             else:
                 flash('Payment is being processed. Your account will be updated shortly.', 'info')
 

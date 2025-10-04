@@ -63,9 +63,14 @@ STRIPE_PRO_PRICE_ID=price_...       # Price ID for Pro subscription
 - `POST /api/stripe/customer-portal` - Opens Stripe customer portal for Pro users
 
 #### Webhook Events Handled
-- `checkout.session.completed` - Upgrades user to Pro tier after successful payment
+- `checkout.session.completed` - Upgrades user to Pro tier after successful payment (subscription mode only)
 - `customer.subscription.deleted` - Downgrades user to Free tier when subscription is deleted
-- `customer.subscription.updated` - Handles subscription status changes (cancellations, failed payments, reactivations)
+- `customer.subscription.updated` - Handles all subscription status changes:
+  - `active`, `trialing` → Grant Pro access
+  - `canceled`, `unpaid`, `incomplete_expired` → Downgrade to Free (terminal states)
+  - `past_due` → Downgrade to Free but keep subscription ID (Stripe will retry)
+  - `incomplete` → No action (initial state)
+- `invoice.payment_failed` - Logs failed recurring payments (Stripe handles retries)
 
 #### Database Fields
 User model includes Stripe-specific fields:
@@ -77,10 +82,15 @@ User model includes Stripe-specific fields:
 #### Setup Instructions
 1. Create products and prices in Stripe Dashboard
 2. Configure webhook endpoint: `https://your-domain.com/api/stripe/webhook`
-3. Select webhook events: `checkout.session.completed`, `customer.subscription.deleted`, `customer.subscription.updated`
+3. Select webhook events: `checkout.session.completed`, `customer.subscription.deleted`, `customer.subscription.updated`, `invoice.payment_failed`
 4. Add environment variables to `.env` file
 5. Users can upgrade via Settings page "Upgrade to Pro" button
 6. Pro users can manage subscription via "Manage Subscription" button
+
+#### Checkout Session Features
+- **Promotion codes enabled** - Users can apply discount codes at checkout
+- **Billing address collection** - Automatically collects addresses for tax compliance
+- **Subscription validation** - Verifies session mode and subscription ID before processing
 
 ### Real-time Features with Socket.IO
 The application uses Flask-SocketIO for real-time timer updates across all user devices:
