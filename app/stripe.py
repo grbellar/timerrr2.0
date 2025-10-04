@@ -65,22 +65,30 @@ def stripe_webhook():
         logger.warning("STRIPE_WEBHOOK_SECRET not configured")
         return jsonify({'error': 'Webhook secret not configured'}), 503
 
-    payload = request.get_data(as_text=True)
+    payload = request.get_data()
     sig_header = request.headers.get('Stripe-Signature')
+
+    if not sig_header:
+        logger.error("Missing Stripe-Signature header")
+        return jsonify({'error': 'Missing signature'}), 400
 
     try:
         event = stripe.Webhook.construct_event(
             payload, sig_header, STRIPE_WEBHOOK_SECRET
         )
-    except ValueError:
-        logger.error("Invalid webhook payload")
+    except ValueError as e:
+        logger.error(f"Invalid webhook payload: {e}")
         return jsonify({'error': 'Invalid payload'}), 400
-    except stripe.error.SignatureVerificationError:
-        logger.error("Invalid webhook signature")
+    except stripe.error.SignatureVerificationError as e:
+        logger.error(f"Invalid webhook signature: {e}")
         return jsonify({'error': 'Invalid signature'}), 400
+
+    # Log all webhook events for debugging
+    logger.info(f"Received Stripe webhook: {event['type']}")
 
     if event['type'] == 'checkout.session.completed':
         session = event['data']['object']
+        logger.info(f"Processing checkout.session.completed for session {session.get('id')}")
 
         user_id = session.get('client_reference_id')
         if not user_id:
@@ -95,7 +103,7 @@ def stripe_webhook():
                 user.stripe_subscription_id = session.get('subscription')
                 user.upgraded_at = datetime.now(timezone.utc)
                 db.session.commit()
-                logger.info(f"User {user_id} upgraded to Pro tier")
+                logger.info(f"User {user_id} upgraded to Pro tier successfully")
             else:
                 logger.error(f"User {user_id} not found")
                 return jsonify({'error': 'User not found'}), 404
@@ -107,6 +115,7 @@ def stripe_webhook():
 
     elif event['type'] == 'customer.subscription.deleted':
         subscription = event['data']['object']
+        logger.info(f"Processing customer.subscription.deleted for subscription {subscription['id']}")
 
         try:
             user = User.query.filter_by(stripe_subscription_id=subscription['id']).first()
@@ -115,6 +124,8 @@ def stripe_webhook():
                 user.stripe_subscription_id = None
                 db.session.commit()
                 logger.info(f"User {user.id} downgraded to Free tier (subscription deleted)")
+            else:
+                logger.warning(f"No user found for subscription {subscription['id']}")
 
         except Exception as e:
             logger.error(f"Error downgrading user: {e}")
@@ -122,6 +133,7 @@ def stripe_webhook():
 
     elif event['type'] == 'customer.subscription.updated':
         subscription = event['data']['object']
+        logger.info(f"Processing customer.subscription.updated for subscription {subscription['id']} with status {subscription['status']}")
 
         try:
             user = User.query.filter_by(stripe_subscription_id=subscription['id']).first()
@@ -137,6 +149,8 @@ def stripe_webhook():
                     user.tier = TierEnum.PRO
                     db.session.commit()
                     logger.info(f"User {user.id} subscription reactivated to Pro tier")
+            else:
+                logger.warning(f"No user found for subscription {subscription['id']}")
 
         except Exception as e:
             logger.error(f"Error updating user subscription: {e}")
@@ -154,6 +168,7 @@ def payment_success():
     if session_id and stripe.api_key:
         try:
             session = stripe.checkout.Session.retrieve(session_id)
+            logger.info(f"Payment success for session {session_id}, status: {session.payment_status}")
 
             if session.payment_status == 'paid':
                 flash('Successfully upgraded to Pro! Your account has been updated.', 'success')
@@ -163,6 +178,8 @@ def payment_success():
         except Exception as e:
             logger.error(f"Error retrieving checkout session: {e}")
             flash('Payment received! Your account will be updated shortly.', 'info')
+    else:
+        flash('Payment successful! Your account will be updated shortly.', 'info')
 
     return redirect(url_for('main.settings'))
 
