@@ -5,8 +5,6 @@ from flask_login import current_user, login_required
 from app.models import db, User, TierEnum
 from datetime import datetime, timezone
 import logging
-from dotenv import load_dotenv
-load_dotenv()
 
 logger = logging.getLogger(__name__)
 

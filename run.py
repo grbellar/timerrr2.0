@@ -1,5 +1,9 @@
 from app import create_app
 import os
+from dotenv import load_dotenv
+
+# Load environment variables in development
+load_dotenv()
 
 app, socketio = create_app()
 
