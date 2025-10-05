@@ -15,6 +15,7 @@ stripe_bp = Blueprint('stripe_bp', __name__)
 stripe.api_key = os.environ.get('STRIPE_SECRET_KEY', '')
 STRIPE_WEBHOOK_SECRET = os.environ.get('STRIPE_WEBHOOK_SECRET', '')
 STRIPE_PRO_PRICE_ID = os.environ.get('STRIPE_PRO_PRICE_ID', '')
+BASE_URL = os.environ.get('BASE_URL', 'http://localhost:5001')
 
 if not stripe.api_key:
     logger.warning("STRIPE_SECRET_KEY not configured. Stripe functionality will not work.")
@@ -38,8 +39,8 @@ def create_checkout_session():
                 'price': STRIPE_PRO_PRICE_ID,
                 'quantity': 1,
             }],
-            success_url=request.host_url + 'stripe/success?session_id={CHECKOUT_SESSION_ID}',
-            cancel_url=request.host_url + 'settings',
+            success_url=BASE_URL + '/stripe/success?session_id={CHECKOUT_SESSION_ID}',
+            cancel_url=BASE_URL + '/settings',
             customer_email=current_user.email,
             client_reference_id=str(current_user.id),
             # Enable promotion codes for marketing campaigns
@@ -317,7 +318,7 @@ def create_customer_portal_session():
     try:
         portal_session = stripe.billing_portal.Session.create(
             customer=current_user.stripe_customer_id,
-            return_url=request.host_url + 'settings',
+            return_url=BASE_URL + '/settings',
         )
 
         return jsonify({'portal_url': portal_session.url}), 200
