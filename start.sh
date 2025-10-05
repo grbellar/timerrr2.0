@@ -1,3 +1,3 @@
 #!/bin/bash
 source .venv/bin/activate
-python app.py
+gunicorn --worker-class geventwebsocket.gunicorn.workers.GeventWebSocketWorker --workers 1 --bind 0.0.0.0:5001 wsgi:application --reload

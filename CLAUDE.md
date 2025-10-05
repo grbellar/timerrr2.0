@@ -16,10 +16,10 @@ source .venv/bin/activate
 # Install dependencies
 pip install -r requirements.txt
 
-# Run the application
-python app.py
-# Or use the start script
+# Run the application with gevent (production-like)
 ./start.sh
+# Or directly:
+gunicorn --worker-class gevent --workers 1 --bind 0.0.0.0:5001 wsgi:application --reload
 ```
 
 The application runs on http://localhost:5001
@@ -53,6 +53,7 @@ Set the following environment variables in `.env`:
 STRIPE_SECRET_KEY=sk_test_...       # Your Stripe secret key
 STRIPE_WEBHOOK_SECRET=whsec_...     # Webhook endpoint signing secret
 STRIPE_PRO_PRICE_ID=price_...       # Price ID for Pro subscription
+BASE_URL=https://timerrr.app/       # Base URL for redirect URLs (production only)
 ```
 
 #### Endpoints
@@ -93,14 +94,17 @@ User model includes Stripe-specific fields:
 - **Subscription validation** - Verifies session mode and subscription ID before processing
 
 ### Real-time Features with Socket.IO
-The application uses Flask-SocketIO for real-time timer updates across all user devices:
+The application uses Flask-SocketIO with gevent for real-time timer updates across all user devices:
 
 #### Architecture
+- **Gevent async mode** - Uses gevent for efficient async I/O and WebSocket connections
+- **Monkey-patching** - `wsgi.py` applies gevent patches before imports (critical for Stripe/HTTP compatibility)
 - **Server-side broadcasting** - Events are emitted from API endpoints in `app/timer.py` after database changes
 - **User-specific rooms** - Each user joins a room `user_{id}` for isolated broadcasts
 - **No page refresh needed** - All timer state changes sync instantly across devices
 
 #### Implementation Details
+- **Entry point** - `wsgi.py` performs gevent monkey-patching before importing the app
 - **WebSocket events** handled in `app/socketio_events.py`
 - **Broadcasting from API** - Timer API endpoints emit Socket.IO events after DB updates
 - **Room-based isolation** - Events broadcast to `user_{current_user.id}` room only

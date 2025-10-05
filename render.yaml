@@ -3,7 +3,7 @@ services:
     name: timerrr
     runtime: python
     buildCommand: "./build.sh"
-    startCommand: "gunicorn --worker-class eventlet --workers 1 --bind 0.0.0.0:$PORT run:app"
+    startCommand: "gunicorn --worker-class geventwebsocket.gunicorn.workers.GeventWebSocketWorker --workers 1 --bind 0.0.0.0:$PORT wsgi:application"
     envVars:
       - key: SECRET_KEY
         generateValue: true
