@@ -76,6 +76,46 @@
         </div>
     </header>
 
+    <!-- Trial Banner -->
+    {% if current_user.is_authenticated and current_user.is_trial_active and not current_user.is_pro and not current_user.banner_dismissed %}
+    <div id="trial-banner" class="bg-blue-50 border-b border-blue-200">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 py-3">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-2">
+                    <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <p class="text-sm text-blue-700">
+                        Your free trial has started! You have <strong>{{ current_user.trial_days_remaining }} days</strong> remaining.
+                    </p>
+                </div>
+                <button id="dismiss-banner" class="text-blue-500 hover:text-blue-700 transition-colors p-1">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+    <script>
+        document.getElementById('dismiss-banner')?.addEventListener('click', async () => {
+            try {
+                const response = await fetch('/api/dismiss-banner', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                if (response.ok) {
+                    document.getElementById('trial-banner').remove();
+                }
+            } catch (error) {
+                console.error('Error dismissing banner:', error);
+            }
+        });
+    </script>
+    {% endif %}
+
     <!-- Flash Messages -->
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}

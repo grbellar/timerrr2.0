@@ -1,11 +1,12 @@
 from flask import Blueprint, request, jsonify
 from flask_login import login_required, current_user
 from app.models import db, Client, TierEnum
+from app.decorators import trial_required
 
 client = Blueprint('client', __name__)
 
 @client.route('/api/clients', methods=['GET'])
-@login_required
+@trial_required
 def get_clients():
     """Get all clients for the current user"""
     clients = Client.query.filter_by(user_id=current_user.id).all()
@@ -17,7 +18,7 @@ def get_clients():
     } for c in clients])
 
 @client.route('/api/clients', methods=['POST'])
-@login_required
+@trial_required
 def create_client():
     """Create a new client"""
     data = request.get_json()
@@ -58,7 +59,7 @@ def create_client():
     }), 201
 
 @client.route('/api/clients/<int:client_id>', methods=['PUT'])
-@login_required
+@trial_required
 def update_client(client_id):
     """Update an existing client"""
     client = Client.query.filter_by(id=client_id, user_id=current_user.id).first()
@@ -98,7 +99,7 @@ def update_client(client_id):
     })
 
 @client.route('/api/clients/<int:client_id>', methods=['DELETE'])
-@login_required
+@trial_required
 def delete_client(client_id):
     """Delete a client"""
     client = Client.query.filter_by(id=client_id, user_id=current_user.id).first()
@@ -112,7 +113,7 @@ def delete_client(client_id):
     return '', 204
 
 @client.route('/api/clients/<int:client_id>', methods=['GET'])
-@login_required
+@trial_required
 def get_client(client_id):
     """Get a single client by ID"""
     client = Client.query.filter_by(id=client_id, user_id=current_user.id).first()

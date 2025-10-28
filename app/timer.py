@@ -3,11 +3,12 @@ from flask_login import login_required, current_user
 from app.models import db, Client, TimeEntry
 from datetime import datetime, timezone
 from app.socketio_events import socketio
+from app.decorators import trial_required
 
 timer = Blueprint('timer', __name__)
 
 @timer.route('/api/clients/timers', methods=['GET'])
-@login_required
+@trial_required
 def get_client_timers():
     """Get all clients with their running timer status"""
     clients = Client.query.filter_by(user_id=current_user.id).all()
@@ -35,7 +36,7 @@ def get_client_timers():
     return jsonify(result)
 
 @timer.route('/api/clients/<int:client_id>/timer/start', methods=['POST'])
-@login_required
+@trial_required
 def start_timer(client_id):
     """Start a timer for a specific client"""
     # Verify client belongs to user
@@ -76,7 +77,7 @@ def start_timer(client_id):
     }), 201
 
 @timer.route('/api/clients/<int:client_id>/timer/stop', methods=['PUT'])
-@login_required
+@trial_required
 def stop_timer(client_id):
     """Stop the running timer for a specific client"""
     # Verify client belongs to user
@@ -118,7 +119,7 @@ def stop_timer(client_id):
     })
 
 @timer.route('/api/timers/<int:timer_id>/notes', methods=['PUT'])
-@login_required
+@trial_required
 def update_timer_notes(timer_id):
     """Update notes for a running timer"""
     data = request.get_json()
@@ -151,7 +152,7 @@ def update_timer_notes(timer_id):
     })
 
 @timer.route('/api/timers/running', methods=['GET'])
-@login_required
+@trial_required
 def get_running_timers():
     """Get all running timers for the current user"""
     timers = TimeEntry.query.filter_by(

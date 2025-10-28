@@ -3,11 +3,12 @@ from flask_login import login_required, current_user
 from app.models import db, Client, TimeEntry
 from datetime import datetime, timezone, timedelta
 from sqlalchemy import and_
+from app.decorators import trial_required
 
 entries = Blueprint('entries', __name__)
 
 @entries.route('/api/entries', methods=['GET'])
-@login_required
+@trial_required
 def get_entries():
     """Get paginated time entries with optional filtering"""
     # Get query parameters
@@ -89,7 +90,7 @@ def get_entries():
     })
 
 @entries.route('/api/entries/<int:entry_id>', methods=['GET'])
-@login_required
+@trial_required
 def get_entry(entry_id):
     """Get a specific time entry"""
     entry = TimeEntry.query.filter_by(
@@ -112,7 +113,7 @@ def get_entry(entry_id):
     })
 
 @entries.route('/api/entries/<int:entry_id>', methods=['PUT'])
-@login_required
+@trial_required
 def update_entry(entry_id):
     """Update a time entry"""
     entry = TimeEntry.query.filter_by(
@@ -164,7 +165,7 @@ def update_entry(entry_id):
     })
 
 @entries.route('/api/entries/<int:entry_id>', methods=['DELETE'])
-@login_required
+@trial_required
 def delete_entry(entry_id):
     """Delete a time entry"""
     entry = TimeEntry.query.filter_by(

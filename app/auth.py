@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_user, logout_user, login_required, current_user
 from app.models import db, User
+from datetime import datetime, timezone
 
 auth = Blueprint('auth', __name__)
 
@@ -41,6 +42,7 @@ def register():
 
         user = User(email=email)
         user.set_password(password)
+        user.trial_started_at = datetime.now(timezone.utc)
         db.session.add(user)
         db.session.commit()
 
