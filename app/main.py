@@ -1,6 +1,7 @@
-from flask import Blueprint, render_template, redirect, url_for, send_from_directory, current_app
+from flask import Blueprint, render_template, redirect, url_for, send_from_directory, current_app, jsonify
 from flask_login import login_required, current_user
-from app.models import Client
+from app.models import Client, db
+from app.decorators import trial_required
 
 main = Blueprint('main', __name__)
 
@@ -11,7 +12,7 @@ def index():
     return render_template('index.html')
 
 @main.route('/timer')
-@login_required
+@trial_required
 def timer():
     # Get all clients for the current user with their timer status
     clients = Client.query.filter_by(user_id=current_user.id).all()
@@ -27,12 +28,12 @@ def timer():
     return render_template('timer.html', client_timers=client_timers)
 
 @main.route('/entries')
-@login_required
+@trial_required
 def entries():
     return render_template('entries.html')
 
 @main.route('/timesheets')
-@login_required
+@trial_required
 def timesheets():
     return render_template('timesheets.html')
 
@@ -77,3 +78,11 @@ def robots_txt():
 @main.route('/sitemap.xml')
 def sitemap_xml():
     return send_from_directory(current_app.static_folder, 'sitemap.xml')
+
+@main.route('/api/dismiss-banner', methods=['POST'])
+@login_required
+def dismiss_banner():
+    """Dismiss the trial banner for the current user"""
+    current_user.banner_dismissed = True
+    db.session.commit()
+    return jsonify({'success': True}), 200

@@ -1,7 +1,7 @@
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 import enum
 
 db = SQLAlchemy()
@@ -23,12 +23,57 @@ class User(UserMixin, db.Model):
     stripe_customer_id = db.Column(db.String(255), nullable=True)
     stripe_subscription_id = db.Column(db.String(255), nullable=True)
     upgraded_at = db.Column(db.DateTime, nullable=True)
+    trial_started_at = db.Column(db.DateTime, nullable=True)
+    banner_dismissed = db.Column(db.Boolean, default=False)
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
 
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
+
+    @property
+    def is_pro(self):
+        """Check if user has an active Pro subscription"""
+        return self.tier == TierEnum.PRO
+
+    @property
+    def trial_end_date(self):
+        """Calculate when the trial ends (14 days from start)"""
+        if not self.trial_started_at:
+            return None
+        return self.trial_started_at + timedelta(days=14)
+
+    @property
+    def trial_days_remaining(self):
+        """Calculate how many days remain in the trial"""
+        if not self.trial_started_at or self.is_pro:
+            return None
+
+        end_date = self.trial_end_date
+        now = datetime.now(timezone.utc)
+
+        if now >= end_date:
+            return 0
+
+        days_left = (end_date - now).days
+        return days_left
+
+    @property
+    def is_trial_active(self):
+        """Check if the free trial is still active"""
+        if self.is_pro:
+            return False
+
+        if not self.trial_started_at:
+            return False
+
+        return datetime.now(timezone.utc) < self.trial_end_date
+
+    @property
+    def has_access(self):
+        """Check if user has access to the app (trial active OR pro subscription)"""
+        return self.is_pro or self.is_trial_active
 
     def __repr__(self):
         return f'<User {self.email}>'

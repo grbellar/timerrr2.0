@@ -6,11 +6,12 @@ from sqlalchemy import and_, extract
 import csv
 import io
 import calendar
+from app.decorators import trial_required
 
 timesheets = Blueprint('timesheets', __name__)
 
 @timesheets.route('/api/timesheets/generate', methods=['POST'])
-@login_required
+@trial_required
 def generate_timesheet():
     """Generate a new timesheet for a client/month/year"""
     data = request.json
@@ -154,7 +155,7 @@ def generate_timesheet():
 
 
 @timesheets.route('/api/timesheets', methods=['GET'])
-@login_required
+@trial_required
 def get_timesheets():
     """Get all timesheets for the current user"""
     timesheets_list = Timesheet.query.filter_by(user_id=current_user.id).order_by(Timesheet.created_at.desc()).all()
@@ -172,7 +173,7 @@ def get_timesheets():
 
 
 @timesheets.route('/api/timesheets/<int:timesheet_id>/download', methods=['GET'])
-@login_required
+@trial_required
 def download_timesheet(timesheet_id):
     """Download a timesheet as CSV"""
     timesheet = Timesheet.query.filter_by(id=timesheet_id, user_id=current_user.id).first()
@@ -193,7 +194,7 @@ def download_timesheet(timesheet_id):
 
 
 @timesheets.route('/api/timesheets/<int:timesheet_id>', methods=['DELETE'])
-@login_required
+@trial_required
 def delete_timesheet(timesheet_id):
     """Delete a timesheet"""
     timesheet = Timesheet.query.filter_by(id=timesheet_id, user_id=current_user.id).first()
