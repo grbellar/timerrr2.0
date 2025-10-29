@@ -1,0 +1,2 @@
+- maybe make hero and sub text more obvious its for freelances. add end quote
+- add nathan testimonial at some point along with real people using the app! riff on "companies that trust this product"
