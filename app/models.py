@@ -13,7 +13,7 @@ class TierEnum(enum.Enum):
 
 
 class User(UserMixin, db.Model):
-    __tablename__ = 'users'
+    __tablename__ = "users"
 
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(120), unique=True, nullable=False)
@@ -31,45 +31,51 @@ class User(UserMixin, db.Model):
         return check_password_hash(self.password_hash, password)
 
     def __repr__(self):
-        return f'<User {self.email}>'
+        return f"<User {self.email}>"
 
 
 class Client(db.Model):
-    __tablename__ = 'clients'
+    __tablename__ = "clients"
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     hourly_rate = db.Column(db.Float, nullable=False, default=0.0)
 
-    user = db.relationship('User', backref=db.backref('clients', lazy=True), foreign_keys=[user_id])
+    user = db.relationship(
+        "User", backref=db.backref("clients", lazy=True), foreign_keys=[user_id]
+    )
 
     def get_running_timer(self):
         """Get the current running timer for this client, if any"""
         return TimeEntry.query.filter_by(
-            client_id=self.id,
-            user_id=self.user_id,
-            end_time=None
+            client_id=self.id, user_id=self.user_id, end_time=None
         ).first()
 
     def __repr__(self):
-        return f'<Client {self.name}>'
+        return f"<Client {self.name}>"
 
 
 class TimeEntry(db.Model):
-    __tablename__ = 'time_entries'
+    __tablename__ = "time_entries"
 
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    client_id = db.Column(db.Integer, db.ForeignKey('clients.id'), nullable=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    client_id = db.Column(db.Integer, db.ForeignKey("clients.id"), nullable=True)
     start_time = db.Column(db.DateTime, nullable=False)
     end_time = db.Column(db.DateTime)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     notes = db.Column(db.Text)
 
-    user = db.relationship('User', backref=db.backref('time_entries', lazy=True), foreign_keys=[user_id])
-    client = db.relationship('Client', backref=db.backref('time_entries', lazy=True), foreign_keys=[client_id])
+    user = db.relationship(
+        "User", backref=db.backref("time_entries", lazy=True), foreign_keys=[user_id]
+    )
+    client = db.relationship(
+        "Client",
+        backref=db.backref("time_entries", lazy=True),
+        foreign_keys=[client_id],
+    )
 
     @property
     def duration(self):
@@ -83,15 +89,15 @@ class TimeEntry(db.Model):
         return self.end_time is None
 
     def __repr__(self):
-        return f'<TimeEntry {self.id}>'
+        return f"<TimeEntry {self.id}>"
 
 
 class Timesheet(db.Model):
-    __tablename__ = 'timesheets'
+    __tablename__ = "timesheets"
 
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    client_id = db.Column(db.Integer, db.ForeignKey('clients.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    client_id = db.Column(db.Integer, db.ForeignKey("clients.id"), nullable=False)
     month = db.Column(db.Integer, nullable=False)  # 1-12
     year = db.Column(db.Integer, nullable=False)
     total_hours = db.Column(db.Float, nullable=False)
@@ -99,8 +105,12 @@ class Timesheet(db.Model):
     csv_data = db.Column(db.Text, nullable=False)  # Store CSV content as text
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
-    user = db.relationship('User', backref=db.backref('timesheets', lazy=True), foreign_keys=[user_id])
-    client = db.relationship('Client', backref=db.backref('timesheets', lazy=True), foreign_keys=[client_id])
+    user = db.relationship(
+        "User", backref=db.backref("timesheets", lazy=True), foreign_keys=[user_id]
+    )
+    client = db.relationship(
+        "Client", backref=db.backref("timesheets", lazy=True), foreign_keys=[client_id]
+    )
 
     def __repr__(self):
-        return f'<Timesheet {self.id} - {self.client.name if self.client else "No Client"} {self.month}/{self.year}>'
+        return f"<Timesheet {self.id} - {self.client.name if self.client else 'No Client'} {self.month}/{self.year}>"
