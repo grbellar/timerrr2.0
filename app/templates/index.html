@@ -4,26 +4,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Timerrr - Simple Time Tracking for Solo Freelancers</title>
-    
+
     <!-- SEO Meta Tags -->
     <meta name="description" content="The 1-click time tracker for solo freelancers who hate time tracking. Stop losing billable hours to time tracking itself. No onboarding flow. No feature tour. No overdone UI.">
     <meta name="author" content="Grant Bellar">
     <link rel="canonical" href="https://timerrr.com/">
-    
+
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://timerrr.com/">
     <meta property="og:title" content="Timerrr - The 1-Click Time Tracker for Solo Freelancers">
     <meta property="og:description" content="Stop losing billable hours to time tracking itself. No onboarding flow. No feature tour. No overdone UI.">
     <meta property="og:image" content="https://timerrr.com/static/preview.jpg">
-    
+
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image">
     <meta property="twitter:url" content="https://timerrr.com/">
     <meta property="twitter:title" content="Timerrr - The 1-Click Time Tracker for Solo Freelancers">
     <meta property="twitter:description" content="Stop losing billable hours to time tracking itself. No onboarding flow. No feature tour. No overdone UI.">
     <meta property="twitter:image" content="https://timerrr.com/static/preview.jpg">
-    
+
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
     <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicon-32x32.png') }}">
@@ -45,7 +45,7 @@
             }
         }
     </script>
-    
+
     <!-- JSON-LD Structured Data -->
     <script type="application/ld+json">
     {
@@ -67,7 +67,7 @@
         },
         "featureList": [
             "1-click time tracking",
-            "Real-time sync across devices", 
+            "Real-time sync across devices",
             "Invoice-ready timesheets",
             "Simple client management"
         ]
@@ -300,7 +300,7 @@
                         <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z"></path>
                     </svg>
                     <blockquote class="text-base sm:text-lg text-gray-700 leading-relaxed mb-4">
-                        Toggl, Harvest, Clockify—they're all great (not) if you need everything. I didn't. I needed to track client hours and generate timesheets. That's it. Two core features. So I built Timerrr. My perfect little time keeping app. I hope you like it as much as I do.
+                        Toggl, Harvest, Clockify—they're all great (not) if you need everything. I didn't. I needed to track client hours and generate timesheets. That's it. Two core features. So I built Timerrr. Less is better.
                     </blockquote>
                     <div class="flex items-center gap-3">
                         <img src="{{ url_for('static', filename='grant-profile.jpg') }}" alt="Grant Bellar" class="w-12 h-12 rounded-full object-cover">
@@ -329,33 +329,33 @@
             "Still a Dude",
             "Halloween Decorater",
         ];
-        
+
         let currentTitleIndex = 0;
         let titleRotationStarted = false;
         let titleRotationInterval = null;
-        
+
         function startTitleRotation() {
             if (!titleRotationStarted) {
                 titleRotationStarted = true;
                 titleRotationInterval = setInterval(rotateTitles, 6000);
             }
         }
-        
+
         function rotateTitles() {
             const titleElement = document.getElementById('creator-title');
             if (titleElement) {
                 // Slide up and fade out
                 titleElement.style.transform = 'translateY(-10px)';
                 titleElement.style.opacity = '0';
-                
+
                 setTimeout(() => {
                     // Change text while invisible
                     currentTitleIndex = (currentTitleIndex + 1) % creatorTitles.length;
                     titleElement.textContent = creatorTitles[currentTitleIndex];
-                    
+
                     // Start from below and slide up while fading in
                     titleElement.style.transform = 'translateY(10px)';
-                    
+
                     setTimeout(() => {
                         // Slide to final position and fade in
                         titleElement.style.transform = 'translateY(0)';
@@ -447,7 +447,7 @@
             const hours = Math.floor(elapsed / 3600);
             const minutes = Math.floor((elapsed % 3600) / 60);
             const seconds = elapsed % 60;
-            
+
             let display;
             if (hours > 0) {
                 display = `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
@@ -475,7 +475,7 @@
                 const hours = Math.floor(elapsed / 3600);
                 const minutes = Math.floor((elapsed % 3600) / 60);
                 const seconds = elapsed % 60;
-                
+
                 let display;
                 if (timer.running) {
                     if (hours > 0) {
@@ -576,7 +576,7 @@
             document.getElementById('demo-total-entries').textContent = total;
             document.getElementById('demo-current-page').textContent = 1;
             document.getElementById('demo-total-pages').textContent = 1;
-            
+
             // Update pagination buttons
             document.getElementById('demo-prev-page').disabled = true;
             document.getElementById('demo-next-page').disabled = true;
@@ -663,7 +663,7 @@
             if (quoteSection) {
                 const rect = quoteSection.getBoundingClientRect();
                 const isVisible = rect.top <= window.innerHeight && rect.bottom >= 0;
-                
+
                 if (isVisible) {
                     startTitleRotation();
                     // Remove scroll listener once started

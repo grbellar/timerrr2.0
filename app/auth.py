@@ -62,7 +62,7 @@ def logout():
 
 def create_default_client(user: User):
     client = Client(
-        user_id=user.id, name="Your first client. Change my name in Settings."
+        user_id=user.id, name="Your first client. Change the name in Settings."
     )
     db.session.add(client)
     db.session.commit()
