@@ -1,6 +1,7 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash
-from flask_login import login_user, logout_user, login_required, current_user
-from app.models import db, User
+from flask import Blueprint, flash, redirect, render_template, request, url_for
+from flask_login import current_user, login_required, login_user, logout_user
+
+from app.models import Client, User, db
 
 auth = Blueprint("auth", __name__)
 
@@ -45,6 +46,8 @@ def register():
         db.session.commit()
 
         login_user(user)
+        create_default_client(user)
+
         return redirect(url_for("main.timer"))
 
     return render_template("register.html")
@@ -55,3 +58,11 @@ def register():
 def logout():
     logout_user()
     return redirect(url_for("auth.login"))
+
+
+def create_default_client(user: User):
+    client = Client(
+        user_id=user.id, name="Your first client. Change my name in Settings."
+    )
+    db.session.add(client)
+    db.session.commit()
