@@ -100,6 +100,10 @@ class Timesheet(db.Model):
     client_id = db.Column(db.Integer, db.ForeignKey("clients.id"), nullable=False)
     month = db.Column(db.Integer, nullable=False)  # 1-12
     year = db.Column(db.Integer, nullable=False)
+    period_start_utc = db.Column(db.DateTime, nullable=True)
+    period_end_utc = db.Column(db.DateTime, nullable=True)
+    period_timezone = db.Column(db.String(64), nullable=True)
+    period_type = db.Column(db.String(20), nullable=True)  # "monthly" | "range"
     total_hours = db.Column(db.Float, nullable=False)
     total_amount = db.Column(db.Float, nullable=False)
     csv_data = db.Column(db.Text, nullable=False)  # Store CSV content as text

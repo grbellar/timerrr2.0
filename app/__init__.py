@@ -3,6 +3,7 @@ from flask_cors import CORS
 from flask_login import LoginManager
 from app.models import db, User
 import os
+from sqlalchemy import inspect, text
 
 
 def create_app():
@@ -66,5 +67,38 @@ def create_app():
     # Create database tables
     with app.app_context():
         db.create_all()
+        _ensure_schema_updates()
 
     return app, socketio
+
+
+def _ensure_schema_updates():
+    """Apply lightweight schema updates for existing SQLite deployments."""
+    inspector = inspect(db.engine)
+    if "timesheets" not in inspector.get_table_names():
+        return
+
+    existing_columns = {c["name"] for c in inspector.get_columns("timesheets")}
+    alter_statements = []
+
+    if "period_start_utc" not in existing_columns:
+        alter_statements.append(
+            "ALTER TABLE timesheets ADD COLUMN period_start_utc DATETIME"
+        )
+    if "period_end_utc" not in existing_columns:
+        alter_statements.append(
+            "ALTER TABLE timesheets ADD COLUMN period_end_utc DATETIME"
+        )
+    if "period_timezone" not in existing_columns:
+        alter_statements.append(
+            "ALTER TABLE timesheets ADD COLUMN period_timezone VARCHAR(64)"
+        )
+    if "period_type" not in existing_columns:
+        alter_statements.append("ALTER TABLE timesheets ADD COLUMN period_type VARCHAR(20)")
+
+    if not alter_statements:
+        return
+
+    for statement in alter_statements:
+        db.session.execute(text(statement))
+    db.session.commit()
