@@ -91,28 +91,33 @@
     <!-- Hero Section -->
     <main class="min-h-screen">
         <div class="max-w-4xl mx-auto px-4 sm:px-6 py-16 sm:py-24 text-center relative">
-            <!-- Diagonal Banner -->
-            <div class="absolute top-8 right-0 sm:right-12 transform rotate-12 bg-green-400 text-gray-900 px-4 py-2 rounded-lg shadow-lg font-semibold text-sm whitespace-nowrap">
-                preserve your sanity! 😌
-            </div>
-
             <!-- Main Headline -->
             <h1 class="text-4xl sm:text-5xl lg:text-6xl font-semibold mb-6 text-gray-900">
-                <span class="sm:hidden">1-Click Time Tracking<br>for Solo Freelancers</span>
-                <span class="hidden sm:inline">The 1-Click Time Tracker for Solo Freelancers Who <br>Hate Time Tracking.</span>
+                <span class="sm:hidden">Track billable time.<br>Export timesheets.<br>Send invoice. Done.</span>
+                <span class="hidden sm:inline">Track billable time. Export timesheets.<br>Send invoice. Done.</span>
             </h1>
 
             <!-- Subheadline -->
-            <p class="text-lg sm:text-xl text-gray-600 mb-10 max-w-2xl mx-auto">
-                Stop losing billable hours to time tracking itself. No onboarding flow. No feature tour. No overdone UI.
+            <p class="text-lg sm:text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
+                Timerrr is the anti-bloat time tracker for solo freelancers. No PM suite. No feature maze. Just clean tracking and invoice-ready exports.
             </p>
 
             <!-- CTA Buttons -->
-            <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mb-6">
                 <a href="{{ url_for('auth.register') }}"
                    class="w-full sm:w-auto px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors text-base">
                     Start tracking in under 20 seconds
                 </a>
+                <a href="#demo"
+                   class="w-full sm:w-auto px-8 py-3 bg-white border border-gray-300 hover:bg-gray-50 text-gray-900 rounded-lg font-medium transition-colors text-base">
+                    See 45-second demo
+                </a>
+            </div>
+
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-6 text-sm text-gray-600 mb-16">
+                <div>⚡ Setup in under 2 minutes</div>
+                <div>🧾 Invoice-ready exports</div>
+                <div>🙅 Built for solo freelancers</div>
             </div>
 
             <!-- Features Grid -->
@@ -151,8 +156,48 @@
                 </div>
             </div>
 
+            <!-- For / Not For + 3-Step Workflow -->
+            <div class="mt-20 sm:mt-24 max-w-5xl mx-auto">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 text-left">
+                        <h3 class="text-lg font-semibold mb-3 text-gray-900">Who Timerrr is for</h3>
+                        <ul class="space-y-2 text-sm text-gray-700">
+                            <li>• Solo freelancers and consultants</li>
+                            <li>• People who bill by the hour</li>
+                            <li>• Anyone who just needs clean proof for invoices</li>
+                        </ul>
+                    </div>
+                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 text-left">
+                        <h3 class="text-lg font-semibold mb-3 text-gray-900">Who Timerrr is not for</h3>
+                        <ul class="space-y-2 text-sm text-gray-700">
+                            <li>• Large teams needing approvals and staffing tools</li>
+                            <li>• Companies wanting all-in-one project management suites</li>
+                            <li>• Anyone who wants 100+ integrations on day one</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 sm:p-8 text-left">
+                    <h3 class="text-xl font-semibold mb-5 text-gray-900 text-center">How it works in 3 steps</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-5 text-sm text-gray-700">
+                        <div>
+                            <div class="font-semibold text-gray-900 mb-1">1) Clock in</div>
+                            <p>Pick your client and start in one click.</p>
+                        </div>
+                        <div>
+                            <div class="font-semibold text-gray-900 mb-1">2) Clock out</div>
+                            <p>Track only the work that matters. No busywork.</p>
+                        </div>
+                        <div>
+                            <div class="font-semibold text-gray-900 mb-1">3) Export timesheet</div>
+                            <p>Send invoice with a clean timesheet attachment.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- See it in Action Section -->
-            <div class="mt-20 sm:mt-32">
+            <div id="demo" class="mt-20 sm:mt-32">
                 <h2 class="text-3xl sm:text-4xl font-semibold mb-12 text-center text-gray-900">Try it out!</h2>
 
                 <!-- Demo Interface -->
@@ -300,7 +345,7 @@
                         <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z"></path>
                     </svg>
                     <blockquote class="text-base sm:text-lg text-gray-700 leading-relaxed mb-4">
-                        Toggl, Harvest, Clockify—they're all great (not) if you need everything. I didn't. I needed to track client hours and generate timesheets. That's it. Two core features. So I built Timerrr. Less is better.
+                        Toggl, Harvest, Clockify—they're great if you need everything. I didn't. I needed to track client hours and generate timesheets. That's it. Two core features. So I built Timerrr. Less is better.
                     </blockquote>
                     <div class="flex items-center gap-3">
                         <img src="{{ url_for('static', filename='grant-profile.jpg') }}" alt="Grant Bellar" class="w-12 h-12 rounded-full object-cover">
