@@ -1,15 +1,28 @@
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 import enum
+import math
 
 db = SQLAlchemy()
 
+TRIAL_DAYS = 7
+
 
 class TierEnum(enum.Enum):
+    # FREE = "not paying" (in trial, expired, or canceled). PRO = paying subscriber.
+    # The Free tier as a permanent state is gone — access is gated by trial_ends_at.
     FREE = "Free"
     PRO = "Pro"
+
+
+def _ensure_aware(dt):
+    if dt is None:
+        return None
+    if dt.tzinfo is None:
+        return dt.replace(tzinfo=timezone.utc)
+    return dt
 
 
 class User(UserMixin, db.Model):
@@ -23,12 +36,44 @@ class User(UserMixin, db.Model):
     stripe_customer_id = db.Column(db.String(255), nullable=True)
     stripe_subscription_id = db.Column(db.String(255), nullable=True)
     upgraded_at = db.Column(db.DateTime, nullable=True)
+    trial_ends_at = db.Column(db.DateTime, nullable=True)
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
 
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
+
+    @property
+    def is_pro(self):
+        return self.tier == TierEnum.PRO
+
+    @property
+    def is_in_trial(self):
+        ends = _ensure_aware(self.trial_ends_at)
+        return ends is not None and ends > datetime.now(timezone.utc)
+
+    @property
+    def trial_expired(self):
+        ends = _ensure_aware(self.trial_ends_at)
+        return ends is not None and ends <= datetime.now(timezone.utc)
+
+    @property
+    def has_access(self):
+        return self.is_pro or self.is_in_trial
+
+    @property
+    def trial_days_remaining(self):
+        ends = _ensure_aware(self.trial_ends_at)
+        if ends is None:
+            return 0
+        delta = ends - datetime.now(timezone.utc)
+        if delta.total_seconds() <= 0:
+            return 0
+        return max(1, math.ceil(delta.total_seconds() / 86400))
+
+    def start_trial(self, days=TRIAL_DAYS):
+        self.trial_ends_at = datetime.now(timezone.utc) + timedelta(days=days)
 
     def __repr__(self):
         return f"<User {self.email}>"

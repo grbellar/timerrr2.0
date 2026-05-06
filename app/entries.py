@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
-from flask_login import login_required, current_user
+from flask_login import current_user
+from app.auth import access_required
 from app.models import db, Client, TimeEntry
 from datetime import datetime, timezone, timedelta
 from sqlalchemy import and_
@@ -8,7 +9,7 @@ entries = Blueprint("entries", __name__)
 
 
 @entries.route("/api/entries", methods=["GET"])
-@login_required
+@access_required
 def get_entries():
     """Get paginated time entries with optional filtering"""
     # Get query parameters
@@ -103,7 +104,7 @@ def get_entries():
 
 
 @entries.route("/api/entries/<int:entry_id>", methods=["GET"])
-@login_required
+@access_required
 def get_entry(entry_id):
     """Get a specific time entry"""
     entry = TimeEntry.query.filter_by(id=entry_id, user_id=current_user.id).first()
@@ -126,7 +127,7 @@ def get_entry(entry_id):
 
 
 @entries.route("/api/entries/<int:entry_id>", methods=["PUT"])
-@login_required
+@access_required
 def update_entry(entry_id):
     """Update a time entry"""
     entry = TimeEntry.query.filter_by(id=entry_id, user_id=current_user.id).first()
@@ -184,7 +185,7 @@ def update_entry(entry_id):
 
 
 @entries.route("/api/entries/<int:entry_id>", methods=["DELETE"])
-@login_required
+@access_required
 def delete_entry(entry_id):
     """Delete a time entry"""
     entry = TimeEntry.query.filter_by(id=entry_id, user_id=current_user.id).first()

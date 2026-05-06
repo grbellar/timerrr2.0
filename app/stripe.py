@@ -29,7 +29,7 @@ def create_checkout_session():
     if not stripe.api_key or not STRIPE_PRO_PRICE_ID:
         return jsonify({"error": "Stripe is not configured"}), 503
 
-    if current_user.tier == TierEnum.PRO:
+    if current_user.is_pro:
         return jsonify({"error": "User already has Pro tier"}), 400
 
     try:

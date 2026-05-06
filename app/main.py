@@ -7,6 +7,7 @@ from flask import (
     current_app,
 )
 from flask_login import login_required, current_user
+from app.auth import access_required
 from app.models import Client
 
 main = Blueprint("main", __name__)
@@ -20,7 +21,7 @@ def index():
 
 
 @main.route("/timer")
-@login_required
+@access_required
 def timer():
     # Get all clients for the current user with their timer status
     clients = Client.query.filter_by(user_id=current_user.id).all()
@@ -34,13 +35,13 @@ def timer():
 
 
 @main.route("/entries")
-@login_required
+@access_required
 def entries():
     return render_template("entries.html")
 
 
 @main.route("/timesheets")
-@login_required
+@access_required
 def timesheets():
     return render_template("timesheets.html")
 

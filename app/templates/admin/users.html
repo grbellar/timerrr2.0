@@ -54,10 +54,13 @@
                         {% endif %}
                     </td>
                     <td class="px-3 py-2.5">
-                        <span class="text-xs px-2 py-0.5 rounded-full
-                            {% if user.tier.value == 'Pro' %}bg-green-100 text-green-700{% else %}bg-gray-100 text-gray-600{% endif %}">
-                            {{ user.tier.value }}
-                        </span>
+                        {% if user.is_pro %}
+                        <span class="text-xs px-2 py-0.5 rounded-full bg-green-100 text-green-700">Pro</span>
+                        {% elif user.is_in_trial %}
+                        <span class="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">Trial · {{ user.trial_days_remaining }}d</span>
+                        {% else %}
+                        <span class="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-500">Expired</span>
+                        {% endif %}
                     </td>
                     <td class="px-3 py-2.5 text-xs text-gray-500 hidden md:table-cell whitespace-nowrap">
                         {{ user.created_at.strftime('%b %-d, %Y') if user.created_at else '—' }}

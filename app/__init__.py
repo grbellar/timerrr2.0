@@ -77,26 +77,37 @@ def create_app():
 def _ensure_schema_updates():
     """Apply lightweight schema updates for existing SQLite deployments."""
     inspector = inspect(db.engine)
-    if "timesheets" not in inspector.get_table_names():
-        return
+    table_names = inspector.get_table_names()
 
-    existing_columns = {c["name"] for c in inspector.get_columns("timesheets")}
     alter_statements = []
 
-    if "period_start_utc" not in existing_columns:
-        alter_statements.append(
-            "ALTER TABLE timesheets ADD COLUMN period_start_utc DATETIME"
-        )
-    if "period_end_utc" not in existing_columns:
-        alter_statements.append(
-            "ALTER TABLE timesheets ADD COLUMN period_end_utc DATETIME"
-        )
-    if "period_timezone" not in existing_columns:
-        alter_statements.append(
-            "ALTER TABLE timesheets ADD COLUMN period_timezone VARCHAR(64)"
-        )
-    if "period_type" not in existing_columns:
-        alter_statements.append("ALTER TABLE timesheets ADD COLUMN period_type VARCHAR(20)")
+    if "timesheets" in table_names:
+        existing = {c["name"] for c in inspector.get_columns("timesheets")}
+        if "period_start_utc" not in existing:
+            alter_statements.append(
+                "ALTER TABLE timesheets ADD COLUMN period_start_utc DATETIME"
+            )
+        if "period_end_utc" not in existing:
+            alter_statements.append(
+                "ALTER TABLE timesheets ADD COLUMN period_end_utc DATETIME"
+            )
+        if "period_timezone" not in existing:
+            alter_statements.append(
+                "ALTER TABLE timesheets ADD COLUMN period_timezone VARCHAR(64)"
+            )
+        if "period_type" not in existing:
+            alter_statements.append(
+                "ALTER TABLE timesheets ADD COLUMN period_type VARCHAR(20)"
+            )
+
+    backfill_trial = False
+    if "users" in table_names:
+        user_cols = {c["name"] for c in inspector.get_columns("users")}
+        if "trial_ends_at" not in user_cols:
+            alter_statements.append(
+                "ALTER TABLE users ADD COLUMN trial_ends_at DATETIME"
+            )
+            backfill_trial = True
 
     if not alter_statements:
         return
@@ -104,3 +115,20 @@ def _ensure_schema_updates():
     for statement in alter_statements:
         db.session.execute(text(statement))
     db.session.commit()
+
+    if backfill_trial:
+        # Existing non-Pro users get a fresh 7-day trial from this deploy so
+        # nobody is locked out at the moment of release.
+        from datetime import datetime, timedelta, timezone
+
+        new_end = (datetime.now(timezone.utc) + timedelta(days=7)).strftime(
+            "%Y-%m-%d %H:%M:%S.%f"
+        )
+        db.session.execute(
+            text(
+                "UPDATE users SET trial_ends_at = :ends "
+                "WHERE trial_ends_at IS NULL AND tier = 'FREE'"
+            ),
+            {"ends": new_end},
+        )
+        db.session.commit()

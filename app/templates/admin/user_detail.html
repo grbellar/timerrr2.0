@@ -3,7 +3,12 @@
 {% block admin_title %}{{ user.email }}{% endblock %}
 {% block admin_subtitle %}
 Joined {{ user.created_at.strftime('%b %-d, %Y') if user.created_at else '—' }}
-· {{ user.tier.value }}
+·
+{% if user.is_pro %}Pro
+{% elif user.is_in_trial %}Trial · {{ user.trial_days_remaining }} day{{ '' if user.trial_days_remaining == 1 else 's' }} remaining
+{% else %}Trial expired
+{% endif %}
+{% if user.trial_ends_at and not user.is_pro %}· trial ends {{ user.trial_ends_at.strftime('%b %-d, %Y') }}{% endif %}
 {% if user.upgraded_at %}· upgraded {{ user.upgraded_at.strftime('%b %-d, %Y') }}{% endif %}
 {% endblock %}
 

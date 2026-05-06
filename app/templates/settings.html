@@ -26,8 +26,24 @@
         <h2 class="text-base font-semibold mb-4">Billing</h2>
         <div class="mb-4">
             <p class="text-sm text-gray-700">
-                <span class="font-medium">Current Plan:</span> {{ current_user.tier.value }}
+                <span class="font-medium">Plan:</span>
+                {% if current_user.is_pro %}
+                    Pro
+                {% elif current_user.is_in_trial %}
+                    Free trial · {{ current_user.trial_days_remaining }} day{{ '' if current_user.trial_days_remaining == 1 else 's' }} remaining
+                {% else %}
+                    Trial expired
+                {% endif %}
             </p>
+            {% if not current_user.is_pro %}
+            <p class="text-xs text-gray-500 mt-1">
+                {% if current_user.is_in_trial %}
+                Your trial ends on {{ current_user.trial_ends_at.strftime('%B %-d, %Y') }}. Upgrade anytime to keep using Timerrr.
+                {% else %}
+                Upgrade to Pro to regain access to your timer, entries, and timesheets.
+                {% endif %}
+            </p>
+            {% endif %}
         </div>
 
         {% if subscription_info and subscription_info.cancel_at_period_end %}
@@ -41,22 +57,22 @@
                     <p class="text-sm font-medium text-orange-900 mb-1">Subscription Canceled</p>
                     <p class="text-sm text-orange-700">
                         Your Pro access will remain active until <span class="font-medium">{{ subscription_info.period_end.strftime('%B %d, %Y') }}</span>.
-                        After this date, your account will be downgraded to the Free plan.
+                        After this date you'll lose access to the app.
                     </p>
                 </div>
             </div>
         </div>
         {% endif %}
 
-        {% if current_user.tier.value == 'Free' %}
-        <button id="upgrade-btn" onclick="upgradeToProStripe()"
-                class="px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white rounded-md font-medium transition-colors text-sm">
-            Upgrade to Pro ($7/month)
-        </button>
-        {% else %}
+        {% if current_user.is_pro %}
         <button onclick="manageSubscription()"
                 class="px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white rounded-md font-medium transition-colors text-sm">
             Manage Subscription
+        </button>
+        {% else %}
+        <button id="upgrade-btn" onclick="upgradeToProStripe()"
+                class="px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white rounded-md font-medium transition-colors text-sm">
+            Upgrade to Pro ($7/month)
         </button>
         {% endif %}
     </div>
@@ -65,9 +81,6 @@
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-5 mb-8">
         <div class="flex items-center justify-between mb-4">
             <h2 class="text-base font-semibold">Clients</h2>
-            {% if current_user.tier.value == 'Free' %}
-            <span class="text-xs text-gray-500">{{ clients|length }}/3 clients</span>
-            {% endif %}
         </div>
 
         <!-- Client List -->
@@ -125,27 +138,10 @@
         </div>
 
         <!-- Add Client Button -->
-        {% if current_user.tier.value == 'Free' and clients|length >= 3 %}
-        <div class="relative inline-block group">
-            <button id="add-client-btn" disabled
-                    class="text-blue-600 text-sm font-medium opacity-50 cursor-not-allowed">
-                + Add Client
-            </button>
-            <div class="absolute bottom-full left-0 mb-2 hidden group-hover:block z-10 w-64">
-                <div class="bg-blue-600 text-white text-xs rounded-lg py-2 px-3 shadow-lg">
-                    Free plan limited to 3 clients. Upgrade to Pro for unlimited clients.
-                    <div class="absolute top-full left-4 -mt-1">
-                        <div class="border-4 border-transparent border-t-blue-600"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        {% else %}
         <button id="add-client-btn" onclick="showAddClientForm()"
                 class="text-blue-600 hover:text-blue-700 text-sm font-medium">
             + Add Client
         </button>
-        {% endif %}
     </div>
 
     <!-- Footer/Feedback Section -->
@@ -159,65 +155,7 @@
 
 <script>
 
-const userTier = "{{ current_user.tier.value }}";
 let editingClientId = null;
-
-function updateClientLimitUI() {
-    if (userTier !== 'Free') return;
-
-    const clientsList = document.getElementById('clients-list');
-    const clientCount = clientsList.querySelectorAll('[data-client-id]').length;
-    const addClientBtn = document.getElementById('add-client-btn');
-
-    if (!addClientBtn) return;  // Safety check
-
-    const btnParent = addClientBtn.parentElement;
-
-    // Update client count display
-    const countDisplay = document.querySelector('.text-xs.text-gray-500');
-    if (countDisplay && countDisplay.textContent.includes('/3')) {
-        countDisplay.textContent = `${clientCount}/3 clients`;
-    }
-
-    // Check if at limit
-    const atLimit = clientCount >= 3;
-
-    // Update button state and tooltip
-    if (atLimit) {
-        if (!btnParent.classList.contains('group')) {
-            // Replace button with tooltip wrapper
-            const wrapper = document.createElement('div');
-            wrapper.className = 'relative inline-block group';
-            wrapper.innerHTML = `
-                <button id="add-client-btn" disabled
-                        class="text-blue-600 text-sm font-medium opacity-50 cursor-not-allowed">
-                    + Add Client
-                </button>
-                <div class="absolute bottom-full left-0 mb-2 hidden group-hover:block z-10 w-64">
-                    <div class="bg-blue-600 text-white text-xs rounded-lg py-2 px-3 shadow-lg">
-                        Free plan limited to 3 clients. Upgrade to Pro for unlimited clients.
-                        <div class="absolute top-full left-4 -mt-1">
-                            <div class="border-4 border-transparent border-t-blue-600"></div>
-                        </div>
-                    </div>
-                </div>
-            `;
-            // Replace just the button, not its parent container
-            addClientBtn.replaceWith(wrapper);
-        }
-    } else {
-        if (btnParent.classList.contains('group')) {
-            // Replace wrapper with plain button
-            const button = document.createElement('button');
-            button.id = 'add-client-btn';
-            button.onclick = showAddClientForm;
-            button.className = 'text-blue-600 hover:text-blue-700 text-sm font-medium';
-            button.textContent = '+ Add Client';
-            btnParent.replaceWith(button);
-        }
-    }
-
-}
 
 function showAddClientForm() {
     editingClientId = null;
@@ -338,7 +276,6 @@ async function saveClient() {
                 </div>
             `;
             clientsList.appendChild(newClientEl);
-            updateClientLimitUI();
         }
 
         cancelClientForm();
@@ -374,8 +311,6 @@ async function deleteClient(clientId) {
         if (clientsList.children.length === 0) {
             clientsList.innerHTML = '<p id="no-clients-message" class="text-sm text-gray-500">No clients yet</p>';
         }
-
-        updateClientLimitUI();
     } catch (error) {
         alert('Failed to delete client. Please try again.');
         console.error('Error deleting client:', error);

@@ -1,9 +1,69 @@
-from flask import Blueprint, flash, redirect, render_template, request, url_for
+import os
+from functools import wraps
+
+from flask import (
+    Blueprint,
+    flash,
+    jsonify,
+    redirect,
+    render_template,
+    request,
+    url_for,
+)
 from flask_login import current_user, login_required, login_user, logout_user
 
 from app.models import Client, User, db
 
 auth = Blueprint("auth", __name__)
+
+
+DEFAULT_ADMIN_EMAILS = {"ayokayitsfine@gmail.com"}
+
+
+def admin_emails():
+    raw = os.environ.get("ADMIN_EMAILS", "")
+    extra = {e.strip().lower() for e in raw.split(",") if e.strip()}
+    return DEFAULT_ADMIN_EMAILS | extra
+
+
+def is_admin_user(user):
+    return (
+        user is not None
+        and getattr(user, "is_authenticated", False)
+        and (user.email or "").lower() in admin_emails()
+    )
+
+
+def access_required(view):
+    """Allow only Pro subscribers, users in trial, and admins.
+
+    For API calls (paths starting with /api/), returns 403 JSON.
+    For browser routes, redirects to /settings with a flash message.
+    """
+
+    @wraps(view)
+    @login_required
+    def wrapped(*args, **kwargs):
+        if current_user.is_authenticated and (
+            is_admin_user(current_user) or current_user.has_access
+        ):
+            return view(*args, **kwargs)
+
+        if request.path.startswith("/api/"):
+            return (
+                jsonify(
+                    {
+                        "error": "trial_expired",
+                        "message": "Your free trial has ended. Upgrade to Pro to continue.",
+                    }
+                ),
+                403,
+            )
+
+        flash("Your free trial has ended. Upgrade to Pro to continue.", "warning")
+        return redirect(url_for("main.settings"))
+
+    return wrapped
 
 
 @auth.route("/login", methods=["GET", "POST"])
@@ -42,6 +102,7 @@ def register():
 
         user = User(email=email)
         user.set_password(password)
+        user.start_trial()
         db.session.add(user)
         db.session.commit()
 

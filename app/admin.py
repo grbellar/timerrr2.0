@@ -1,4 +1,3 @@
-import os
 from datetime import datetime, timedelta, timezone
 from functools import wraps
 
@@ -6,27 +5,17 @@ from flask import Blueprint, abort, render_template, request
 from flask_login import current_user, login_required
 from sqlalchemy import func
 
+from app.auth import is_admin_user
 from app.models import Client, TierEnum, TimeEntry, Timesheet, User, db
 
 admin = Blueprint("admin", __name__, url_prefix="/admin")
-
-
-DEFAULT_ADMIN_EMAILS = {"ayokayitsfine@gmail.com"}
-
-
-def _admin_emails():
-    raw = os.environ.get("ADMIN_EMAILS", "")
-    extra = {e.strip().lower() for e in raw.split(",") if e.strip()}
-    return DEFAULT_ADMIN_EMAILS | extra
 
 
 def admin_required(view):
     @wraps(view)
     @login_required
     def wrapped(*args, **kwargs):
-        if not current_user.is_authenticated:
-            abort(404)
-        if (current_user.email or "").lower() not in _admin_emails():
+        if not is_admin_user(current_user):
             abort(404)
         return view(*args, **kwargs)
 
@@ -63,7 +52,26 @@ def overview():
         .scalar()
         or 0
     )
-    free_users = total_users - pro_users
+    trialing_users = (
+        db.session.query(func.count(User.id))
+        .filter(
+            User.tier == TierEnum.FREE,
+            User.trial_ends_at.isnot(None),
+            User.trial_ends_at > now,
+        )
+        .scalar()
+        or 0
+    )
+    expired_users = (
+        db.session.query(func.count(User.id))
+        .filter(
+            User.tier == TierEnum.FREE,
+            User.trial_ends_at.isnot(None),
+            User.trial_ends_at <= now,
+        )
+        .scalar()
+        or 0
+    )
     paying_users = (
         db.session.query(func.count(User.id))
         .filter(User.stripe_subscription_id.isnot(None))
@@ -182,7 +190,8 @@ def overview():
         "admin/overview.html",
         total_users=total_users,
         pro_users=pro_users,
-        free_users=free_users,
+        trialing_users=trialing_users,
+        expired_users=expired_users,
         paying_users=paying_users,
         signups_24h=signups_24h,
         signups_7d=signups_7d,

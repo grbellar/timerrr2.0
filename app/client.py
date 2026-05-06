@@ -1,12 +1,13 @@
 from flask import Blueprint, request, jsonify
-from flask_login import login_required, current_user
-from app.models import db, Client, TierEnum
+from flask_login import current_user
+from app.auth import access_required
+from app.models import db, Client
 
 client = Blueprint("client", __name__)
 
 
 @client.route("/api/clients", methods=["GET"])
-@login_required
+@access_required
 def get_clients():
     """Get all clients for the current user"""
     clients = Client.query.filter_by(user_id=current_user.id).all()
@@ -24,7 +25,7 @@ def get_clients():
 
 
 @client.route("/api/clients", methods=["POST"])
-@login_required
+@access_required
 def create_client():
     """Create a new client"""
     data = request.get_json()
@@ -33,16 +34,6 @@ def create_client():
 
     if not name:
         return jsonify({"error": "Client name is required"}), 400
-
-    # Check client limit for FREE tier users
-    if current_user.tier == TierEnum.FREE:
-        client_count = Client.query.filter_by(user_id=current_user.id).count()
-        if client_count >= 3:
-            return jsonify(
-                {
-                    "error": "Free plan limited to 3 clients. Upgrade to Pro for unlimited clients."
-                }
-            ), 403
 
     # Validate hourly rate
     try:
@@ -72,7 +63,7 @@ def create_client():
 
 
 @client.route("/api/clients/<int:client_id>", methods=["PUT"])
-@login_required
+@access_required
 def update_client(client_id):
     """Update an existing client"""
     client = Client.query.filter_by(id=client_id, user_id=current_user.id).first()
@@ -119,7 +110,7 @@ def update_client(client_id):
 
 
 @client.route("/api/clients/<int:client_id>", methods=["DELETE"])
-@login_required
+@access_required
 def delete_client(client_id):
     """Delete a client"""
     client = Client.query.filter_by(id=client_id, user_id=current_user.id).first()
@@ -134,7 +125,7 @@ def delete_client(client_id):
 
 
 @client.route("/api/clients/<int:client_id>", methods=["GET"])
-@login_required
+@access_required
 def get_client(client_id):
     """Get a single client by ID"""
     client = Client.query.filter_by(id=client_id, user_id=current_user.id).first()

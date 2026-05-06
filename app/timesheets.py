@@ -5,9 +5,10 @@ import io
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from flask import Blueprint, Response, jsonify, request
-from flask_login import current_user, login_required
+from flask_login import current_user
 from sqlalchemy import and_
 
+from app.auth import access_required
 from app.models import Client, TimeEntry, Timesheet, db
 
 timesheets = Blueprint("timesheets", __name__)
@@ -130,7 +131,7 @@ def _serialize_timesheet(timesheet):
 
 
 @timesheets.route("/api/timesheets/generate-range", methods=["POST"])
-@login_required
+@access_required
 def generate_timesheet_range():
     """Generate a timesheet for a specific date range."""
     data = request.get_json(silent=True) or {}
@@ -298,7 +299,7 @@ def generate_timesheet_range():
 
 
 @timesheets.route("/api/timesheets/generate", methods=["POST"])
-@login_required
+@access_required
 def generate_timesheet():
     """Generate a month-based timesheet (legacy endpoint)."""
     data = request.json or {}
@@ -449,7 +450,7 @@ def generate_timesheet():
 
 
 @timesheets.route("/api/timesheets", methods=["GET"])
-@login_required
+@access_required
 def get_timesheets():
     """Get all timesheets for the current user."""
     timesheets_list = (
@@ -461,7 +462,7 @@ def get_timesheets():
 
 
 @timesheets.route("/api/timesheets/<int:timesheet_id>/download", methods=["GET"])
-@login_required
+@access_required
 def download_timesheet(timesheet_id):
     """Download a timesheet as CSV."""
     timesheet = Timesheet.query.filter_by(
@@ -499,7 +500,7 @@ def download_timesheet(timesheet_id):
 
 
 @timesheets.route("/api/timesheets/<int:timesheet_id>", methods=["DELETE"])
-@login_required
+@access_required
 def delete_timesheet(timesheet_id):
     """Delete a timesheet."""
     timesheet = Timesheet.query.filter_by(
