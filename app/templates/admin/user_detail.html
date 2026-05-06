@@ -1,0 +1,189 @@
+{% extends "admin/_base.html" %}
+{% block title %}Admin · {{ user.email }}{% endblock %}
+{% block admin_title %}{{ user.email }}{% endblock %}
+{% block admin_subtitle %}
+Joined {{ user.created_at.strftime('%b %-d, %Y') if user.created_at else '—' }}
+· {{ user.tier.value }}
+{% if user.upgraded_at %}· upgraded {{ user.upgraded_at.strftime('%b %-d, %Y') }}{% endif %}
+{% endblock %}
+
+{% block admin_content %}
+<div class="mb-4">
+    <a href="{{ url_for('admin.users_list') }}" class="text-xs text-gray-500 hover:text-gray-900">← Back to users</a>
+</div>
+
+<!-- Stat cards -->
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+        <div class="text-xs text-gray-500 mb-1">Hours tracked</div>
+        <div class="text-2xl font-semibold">{{ '%.1f' % total_hours }}</div>
+    </div>
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+        <div class="text-xs text-gray-500 mb-1">Entries</div>
+        <div class="text-2xl font-semibold">{{ total_entries }}</div>
+    </div>
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+        <div class="text-xs text-gray-500 mb-1">Clients</div>
+        <div class="text-2xl font-semibold">{{ clients_with_stats|length }}</div>
+    </div>
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+        <div class="text-xs text-gray-500 mb-1">Last activity</div>
+        <div class="text-sm font-semibold">
+            {% if last_activity %}{{ last_activity.strftime('%b %-d, %Y') }}<div class="text-xs text-gray-500 font-normal">{{ last_activity.strftime('%H:%M') }} UTC</div>{% else %}<span class="text-gray-400">—</span>{% endif %}
+        </div>
+    </div>
+</div>
+
+{% if running %}
+{% set entry, client = running %}
+{% set elapsed_s = (now - entry.start_time.replace(tzinfo=now.tzinfo)).total_seconds() if entry.start_time else 0 %}
+{% set hours = (elapsed_s // 3600) | int %}
+{% set minutes = ((elapsed_s % 3600) // 60) | int %}
+<div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-5 mb-6">
+    <div class="flex items-center gap-2 mb-1">
+        <span class="inline-block w-2 h-2 bg-green-500 rounded-full"></span>
+        <span class="text-xs text-gray-500">timer running</span>
+    </div>
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+        <div>
+            <div class="text-base font-medium text-gray-900">{{ client.name if client else 'No client' }}</div>
+            {% if entry.notes %}<div class="text-sm text-gray-600 mt-1">{{ entry.notes }}</div>{% endif %}
+            <div class="text-xs text-gray-500 mt-1">started {{ entry.start_time.strftime('%b %-d, %Y %H:%M') }} UTC</div>
+        </div>
+        <div class="text-2xl font-mono font-semibold">{{ hours }}h {{ '%02d' % minutes }}m</div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Stripe info -->
+{% if user.stripe_customer_id or user.stripe_subscription_id %}
+<div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-5 mb-6">
+    <h2 class="text-sm font-medium text-gray-700 mb-3">Stripe</h2>
+    <dl class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+        {% if user.stripe_customer_id %}
+        <div>
+            <dt class="text-xs text-gray-500">Customer ID</dt>
+            <dd class="font-mono text-gray-900 break-all">{{ user.stripe_customer_id }}</dd>
+        </div>
+        {% endif %}
+        {% if user.stripe_subscription_id %}
+        <div>
+            <dt class="text-xs text-gray-500">Subscription ID</dt>
+            <dd class="font-mono text-gray-900 break-all">{{ user.stripe_subscription_id }}</dd>
+        </div>
+        {% endif %}
+        {% if user.upgraded_at %}
+        <div>
+            <dt class="text-xs text-gray-500">Upgraded at</dt>
+            <dd class="text-gray-900">{{ user.upgraded_at.strftime('%b %-d, %Y %H:%M') }} UTC</dd>
+        </div>
+        {% endif %}
+    </dl>
+</div>
+{% endif %}
+
+<!-- Clients -->
+<div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
+    <div class="px-4 sm:px-5 py-3 border-b border-gray-200">
+        <h2 class="text-sm font-medium text-gray-700">Clients</h2>
+    </div>
+    {% if clients_with_stats %}
+    <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+            <thead class="bg-gray-50 text-xs text-gray-500">
+                <tr>
+                    <th class="text-left px-4 sm:px-5 py-2 font-medium">Name</th>
+                    <th class="text-right px-3 py-2 font-medium">Rate</th>
+                    <th class="text-right px-3 py-2 font-medium">Entries</th>
+                    <th class="text-right px-3 sm:px-5 py-2 font-medium">Hours</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200">
+                {% for client, entries, seconds in clients_with_stats %}
+                <tr class="hover:bg-gray-50 transition-colors">
+                    <td class="px-4 sm:px-5 py-2.5 text-gray-900">{{ client.name }}</td>
+                    <td class="px-3 py-2.5 text-right text-gray-700">${{ '%.2f' % client.hourly_rate }}/hr</td>
+                    <td class="px-3 py-2.5 text-right text-gray-700">{{ entries }}</td>
+                    <td class="px-3 sm:px-5 py-2.5 text-right text-gray-900 font-medium">{{ '%.1f' % ((seconds or 0) / 3600.0) }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="text-center py-8"><p class="text-gray-500 text-sm">No clients</p></div>
+    {% endif %}
+</div>
+
+<!-- Recent entries -->
+<div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
+    <div class="px-4 sm:px-5 py-3 border-b border-gray-200">
+        <h2 class="text-sm font-medium text-gray-700">Recent entries</h2>
+    </div>
+    {% if recent_entries %}
+    <ul class="divide-y divide-gray-200">
+        {% for entry, client in recent_entries %}
+        <li class="px-4 sm:px-5 py-3 hover:bg-gray-50 transition-colors">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+                <div class="min-w-0">
+                    <div class="flex items-center gap-2">
+                        {% if not entry.end_time %}<span class="inline-block w-2 h-2 bg-green-500 rounded-full"></span>{% endif %}
+                        <span class="text-sm font-medium text-gray-900">{{ client.name if client else 'No client' }}</span>
+                    </div>
+                    {% if entry.notes %}<div class="text-xs text-gray-600 truncate">{{ entry.notes }}</div>{% endif %}
+                    <div class="text-xs text-gray-500">
+                        {{ entry.start_time.strftime('%b %-d, %Y %H:%M') }} UTC
+                        {% if entry.end_time %}→ {{ entry.end_time.strftime('%H:%M') }}{% else %}· running{% endif %}
+                    </div>
+                </div>
+                <div class="text-sm font-mono text-gray-700">
+                    {% if entry.duration %}
+                    {% set h = (entry.duration // 3600) | int %}
+                    {% set m = ((entry.duration % 3600) // 60) | int %}
+                    {{ h }}h {{ '%02d' % m }}m
+                    {% else %}—{% endif %}
+                </div>
+            </div>
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <div class="text-center py-8"><p class="text-gray-500 text-sm">No time entries</p></div>
+    {% endif %}
+</div>
+
+<!-- Timesheets -->
+<div class="bg-white rounded-lg shadow-sm border border-gray-200">
+    <div class="px-4 sm:px-5 py-3 border-b border-gray-200">
+        <h2 class="text-sm font-medium text-gray-700">Timesheets</h2>
+    </div>
+    {% if timesheets %}
+    <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+            <thead class="bg-gray-50 text-xs text-gray-500">
+                <tr>
+                    <th class="text-left px-4 sm:px-5 py-2 font-medium">Client</th>
+                    <th class="text-left px-3 py-2 font-medium">Period</th>
+                    <th class="text-right px-3 py-2 font-medium">Hours</th>
+                    <th class="text-right px-3 py-2 font-medium">Amount</th>
+                    <th class="text-left px-3 sm:px-5 py-2 font-medium">Created</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200">
+                {% for ts, client in timesheets %}
+                <tr class="hover:bg-gray-50 transition-colors">
+                    <td class="px-4 sm:px-5 py-2.5 text-gray-900">{{ client.name if client else '—' }}</td>
+                    <td class="px-3 py-2.5 text-gray-700">{{ ts.month }}/{{ ts.year }}{% if ts.period_type == 'range' %} <span class="text-xs text-gray-400">(custom)</span>{% endif %}</td>
+                    <td class="px-3 py-2.5 text-right text-gray-700">{{ '%.1f' % ts.total_hours }}</td>
+                    <td class="px-3 py-2.5 text-right text-gray-900 font-medium">${{ '%.2f' % ts.total_amount }}</td>
+                    <td class="px-3 sm:px-5 py-2.5 text-xs text-gray-500 whitespace-nowrap">{{ ts.created_at.strftime('%b %-d, %Y') if ts.created_at else '—' }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="text-center py-8"><p class="text-gray-500 text-sm">No timesheets generated</p></div>
+    {% endif %}
+</div>
+{% endblock %}

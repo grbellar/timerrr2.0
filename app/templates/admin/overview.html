@@ -1,0 +1,176 @@
+{% extends "admin/_base.html" %}
+{% block title %}Admin · Overview{% endblock %}
+{% block admin_title %}Overview{% endblock %}
+{% block admin_subtitle %}Top-level metrics across all users.{% endblock %}
+
+{% block admin_content %}
+<!-- Top stat cards -->
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+        <div class="text-xs text-gray-500 mb-1">Total users</div>
+        <div class="text-2xl font-semibold">{{ total_users }}</div>
+        <div class="text-xs text-gray-500 mt-1">
+            <span class="text-gray-700 font-medium">{{ pro_users }}</span> Pro ·
+            <span class="text-gray-700 font-medium">{{ free_users }}</span> Free
+        </div>
+    </div>
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+        <div class="text-xs text-gray-500 mb-1">Paying subscribers</div>
+        <div class="text-2xl font-semibold">{{ paying_users }}</div>
+        <div class="text-xs text-gray-500 mt-1">active Stripe subs</div>
+    </div>
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+        <div class="text-xs text-gray-500 mb-1">Hours tracked</div>
+        <div class="text-2xl font-semibold">{{ '%.1f' % total_hours }}</div>
+        <div class="text-xs text-gray-500 mt-1">{{ total_entries }} entries · {{ total_timesheets }} timesheets</div>
+    </div>
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+        <div class="text-xs text-gray-500 mb-1">Live timers</div>
+        <div class="text-2xl font-semibold flex items-center gap-2">
+            {% if running_timers %}<span class="inline-block w-2.5 h-2.5 bg-green-500 rounded-full"></span>{% endif %}
+            {{ running_timers }}
+        </div>
+        <div class="text-xs text-gray-500 mt-1">currently running</div>
+    </div>
+</div>
+
+<!-- Activity row -->
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+        <div class="text-xs text-gray-500 mb-1">Signups · 24h</div>
+        <div class="text-xl font-semibold">{{ signups_24h }}</div>
+    </div>
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+        <div class="text-xs text-gray-500 mb-1">Signups · 7d</div>
+        <div class="text-xl font-semibold">{{ signups_7d }}</div>
+    </div>
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+        <div class="text-xs text-gray-500 mb-1">Active users · 7d</div>
+        <div class="text-xl font-semibold">{{ active_users_7d }}</div>
+        <div class="text-xs text-gray-500 mt-1">{{ entries_7d }} entries started</div>
+    </div>
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+        <div class="text-xs text-gray-500 mb-1">Active users · 30d</div>
+        <div class="text-xl font-semibold">{{ active_users_30d }}</div>
+        <div class="text-xs text-gray-500 mt-1">{{ signups_30d }} new signups</div>
+    </div>
+</div>
+
+<!-- Signups sparkline -->
+<div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-5 mb-6">
+    <div class="flex items-center justify-between mb-3">
+        <h2 class="text-sm font-medium text-gray-700">Signups · last 14 days</h2>
+        <div class="text-xs text-gray-500">peak {{ max_daily }}/day</div>
+    </div>
+    <div class="flex items-end gap-1 h-24">
+        {% for d in daily_signups %}
+        {% set h = (d.count / max_daily * 100) if max_daily else 0 %}
+        <div class="flex-1 flex flex-col items-center justify-end gap-1 group relative">
+            <div class="w-full bg-gray-900 rounded-sm transition-colors group-hover:bg-gray-700"
+                 style="height: {{ '%.1f' % h }}%; min-height: {% if d.count %}2px{% else %}0{% endif %};"></div>
+            <div class="text-[10px] text-gray-400">{{ d.date.strftime('%-d') }}</div>
+            <div class="hidden group-hover:block absolute bottom-full mb-1 px-2 py-1 bg-gray-900 text-white text-[10px] rounded whitespace-nowrap z-10">
+                {{ d.date.strftime('%b %-d') }}: {{ d.count }}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5 mb-6">
+    <!-- Recent signups -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+        <div class="px-4 sm:px-5 py-3 border-b border-gray-200 flex items-center justify-between">
+            <h2 class="text-sm font-medium text-gray-700">Recent signups</h2>
+            <a href="{{ url_for('admin.users_list') }}" class="text-xs text-blue-600 hover:text-blue-700">View all →</a>
+        </div>
+        {% if recent_signups %}
+        <ul class="divide-y divide-gray-200">
+            {% for u in recent_signups %}
+            <li class="px-4 sm:px-5 py-3 flex items-center justify-between hover:bg-gray-50 transition-colors">
+                <div class="min-w-0">
+                    <a href="{{ url_for('admin.user_detail', user_id=u.id) }}"
+                       class="text-sm text-gray-900 hover:text-blue-700 font-medium truncate block">{{ u.email }}</a>
+                    <div class="text-xs text-gray-500">{{ u.created_at.strftime('%b %-d, %Y · %H:%M UTC') if u.created_at }}</div>
+                </div>
+                <span class="text-xs px-2 py-0.5 rounded-full
+                    {% if u.tier.value == 'Pro' %}bg-green-100 text-green-700{% else %}bg-gray-100 text-gray-600{% endif %}">
+                    {{ u.tier.value }}
+                </span>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <div class="text-center py-8"><p class="text-gray-500 text-sm">No signups yet</p></div>
+        {% endif %}
+    </div>
+
+    <!-- Currently running timers -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+        <div class="px-4 sm:px-5 py-3 border-b border-gray-200 flex items-center gap-2">
+            <h2 class="text-sm font-medium text-gray-700">Live timers</h2>
+            {% if running_timer_rows %}<span class="inline-block w-2 h-2 bg-green-500 rounded-full"></span>{% endif %}
+        </div>
+        {% if running_timer_rows %}
+        <ul class="divide-y divide-gray-200">
+            {% for entry, user, client in running_timer_rows %}
+            {% set elapsed_s = (now - entry.start_time.replace(tzinfo=now.tzinfo)).total_seconds() if entry.start_time else 0 %}
+            {% set hours = (elapsed_s // 3600) | int %}
+            {% set minutes = ((elapsed_s % 3600) // 60) | int %}
+            <li class="px-4 sm:px-5 py-3 flex items-center justify-between hover:bg-gray-50 transition-colors">
+                <div class="min-w-0">
+                    <a href="{{ url_for('admin.user_detail', user_id=user.id) }}"
+                       class="text-sm text-gray-900 hover:text-blue-700 font-medium truncate block">{{ user.email }}</a>
+                    <div class="text-xs text-gray-500">{{ client.name if client else 'No client' }}</div>
+                </div>
+                <div class="text-xs text-gray-700 font-mono">{{ hours }}h {{ '%02d' % minutes }}m</div>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <div class="text-center py-8"><p class="text-gray-500 text-sm">No timers running</p></div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Top users by hours -->
+<div class="bg-white rounded-lg shadow-sm border border-gray-200">
+    <div class="px-4 sm:px-5 py-3 border-b border-gray-200">
+        <h2 class="text-sm font-medium text-gray-700">Top users by hours tracked</h2>
+    </div>
+    {% if top_users_by_hours %}
+    <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+            <thead class="bg-gray-50 text-xs text-gray-500">
+                <tr>
+                    <th class="text-left px-4 sm:px-5 py-2 font-medium">User</th>
+                    <th class="text-left px-4 py-2 font-medium">Tier</th>
+                    <th class="text-right px-4 py-2 font-medium">Entries</th>
+                    <th class="text-right px-4 sm:px-5 py-2 font-medium">Hours</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200">
+                {% for user, seconds, entries in top_users_by_hours %}
+                <tr class="hover:bg-gray-50 transition-colors">
+                    <td class="px-4 sm:px-5 py-2.5">
+                        <a href="{{ url_for('admin.user_detail', user_id=user.id) }}"
+                           class="text-gray-900 hover:text-blue-700 font-medium">{{ user.email }}</a>
+                    </td>
+                    <td class="px-4 py-2.5">
+                        <span class="text-xs px-2 py-0.5 rounded-full
+                            {% if user.tier.value == 'Pro' %}bg-green-100 text-green-700{% else %}bg-gray-100 text-gray-600{% endif %}">
+                            {{ user.tier.value }}
+                        </span>
+                    </td>
+                    <td class="px-4 py-2.5 text-right text-gray-700">{{ entries }}</td>
+                    <td class="px-4 sm:px-5 py-2.5 text-right text-gray-900 font-medium">{{ '%.1f' % (seconds / 3600.0) }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="text-center py-8"><p class="text-gray-500 text-sm">No tracked time yet</p></div>
+    {% endif %}
+</div>
+{% endblock %}

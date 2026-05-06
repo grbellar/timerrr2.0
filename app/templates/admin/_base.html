@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
+    <div class="mb-5 sm:mb-6 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+        <div>
+            <div class="flex items-center gap-2 mb-1">
+                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-900 text-white">Admin</span>
+                <h1 class="text-xl sm:text-2xl font-semibold">{% block admin_title %}Dashboard{% endblock %}</h1>
+            </div>
+            <p class="text-sm text-gray-600">{% block admin_subtitle %}{% endblock %}</p>
+        </div>
+        <nav class="flex items-center gap-4 text-sm">
+            <a href="{{ url_for('admin.overview') }}"
+               class="{% if request.endpoint == 'admin.overview' %}text-gray-900 font-medium{% else %}text-gray-600 hover:text-gray-900{% endif %}">Overview</a>
+            <a href="{{ url_for('admin.users_list') }}"
+               class="{% if request.endpoint in ['admin.users_list', 'admin.user_detail'] %}text-gray-900 font-medium{% else %}text-gray-600 hover:text-gray-900{% endif %}">Users</a>
+        </nav>
+    </div>
+
+    {% block admin_content %}{% endblock %}
+</div>
+{% endblock %}

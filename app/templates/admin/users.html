@@ -1,0 +1,80 @@
+{% extends "admin/_base.html" %}
+{% block title %}Admin · Users{% endblock %}
+{% block admin_title %}Users{% endblock %}
+{% block admin_subtitle %}{{ rows|length }} user{{ '' if rows|length == 1 else 's' }} shown{% if q %} · filtered by "{{ q }}"{% endif %}{% endblock %}
+
+{% block admin_content %}
+<div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-4">
+    <form method="GET" action="{{ url_for('admin.users_list') }}"
+          class="flex flex-col sm:flex-row sm:items-center gap-3 p-4 sm:p-5">
+        <input type="text" name="q" value="{{ q }}"
+               placeholder="Search by email"
+               class="flex-1 px-3 py-1.5 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+        <select name="sort"
+                class="px-2.5 py-1.5 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+            <option value="recent" {% if sort == 'recent' %}selected{% endif %}>Sort: newest</option>
+            <option value="active" {% if sort == 'active' %}selected{% endif %}>Sort: last activity</option>
+            <option value="hours" {% if sort == 'hours' %}selected{% endif %}>Sort: hours tracked</option>
+            <option value="entries" {% if sort == 'entries' %}selected{% endif %}>Sort: entries</option>
+            <option value="tier" {% if sort == 'tier' %}selected{% endif %}>Sort: tier</option>
+        </select>
+        <button type="submit"
+                class="px-4 py-1.5 bg-gray-900 hover:bg-gray-800 text-white rounded-md font-medium transition-colors text-sm">
+            Apply
+        </button>
+        {% if q or sort != 'recent' %}
+        <a href="{{ url_for('admin.users_list') }}" class="text-xs text-gray-500 hover:text-gray-700">Reset</a>
+        {% endif %}
+    </form>
+</div>
+
+<div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+    {% if rows %}
+    <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+            <thead class="bg-gray-50 text-xs text-gray-500">
+                <tr>
+                    <th class="text-left px-4 sm:px-5 py-2.5 font-medium">User</th>
+                    <th class="text-left px-3 py-2.5 font-medium">Tier</th>
+                    <th class="text-left px-3 py-2.5 font-medium hidden md:table-cell">Joined</th>
+                    <th class="text-right px-3 py-2.5 font-medium">Clients</th>
+                    <th class="text-right px-3 py-2.5 font-medium">Entries</th>
+                    <th class="text-right px-3 py-2.5 font-medium">Hours</th>
+                    <th class="text-left px-3 sm:px-5 py-2.5 font-medium hidden md:table-cell">Last activity</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200">
+                {% for user, clients_count, entries_count, seconds, last_activity in rows %}
+                <tr class="hover:bg-gray-50 transition-colors">
+                    <td class="px-4 sm:px-5 py-2.5">
+                        <a href="{{ url_for('admin.user_detail', user_id=user.id) }}"
+                           class="text-gray-900 hover:text-blue-700 font-medium break-all">{{ user.email }}</a>
+                        {% if user.stripe_subscription_id %}
+                        <div class="text-[10px] text-gray-400 font-mono">sub: {{ user.stripe_subscription_id[:16] }}…</div>
+                        {% endif %}
+                    </td>
+                    <td class="px-3 py-2.5">
+                        <span class="text-xs px-2 py-0.5 rounded-full
+                            {% if user.tier.value == 'Pro' %}bg-green-100 text-green-700{% else %}bg-gray-100 text-gray-600{% endif %}">
+                            {{ user.tier.value }}
+                        </span>
+                    </td>
+                    <td class="px-3 py-2.5 text-xs text-gray-500 hidden md:table-cell whitespace-nowrap">
+                        {{ user.created_at.strftime('%b %-d, %Y') if user.created_at else '—' }}
+                    </td>
+                    <td class="px-3 py-2.5 text-right text-gray-700">{{ clients_count }}</td>
+                    <td class="px-3 py-2.5 text-right text-gray-700">{{ entries_count }}</td>
+                    <td class="px-3 py-2.5 text-right text-gray-900 font-medium">{{ '%.1f' % ((seconds or 0) / 3600.0) }}</td>
+                    <td class="px-3 sm:px-5 py-2.5 text-xs text-gray-500 hidden md:table-cell whitespace-nowrap">
+                        {% if last_activity %}{{ last_activity.strftime('%b %-d, %Y %H:%M') }} UTC{% else %}—{% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="text-center py-12"><p class="text-gray-500 text-sm">No users match these filters</p></div>
+    {% endif %}
+</div>
+{% endblock %}

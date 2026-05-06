@@ -55,6 +55,7 @@ def create_app():
     from app.entries import entries
     from app.stripe import stripe_bp
     from app.timesheets import timesheets
+    from app.admin import admin
 
     app.register_blueprint(main)
     app.register_blueprint(auth)
@@ -63,6 +64,7 @@ def create_app():
     app.register_blueprint(entries)
     app.register_blueprint(stripe_bp)
     app.register_blueprint(timesheets)
+    app.register_blueprint(admin)
 
     # Create database tables
     with app.app_context():
