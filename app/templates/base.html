@@ -177,30 +177,66 @@
         <!-- Trial banner -->
         {% if current_user.is_authenticated and not current_user.is_pro %}
         {% if current_user.is_in_trial %}
-        <div class="bg-blue-50 border-b border-blue-200">
+        <div id="trial-banner" data-key="trial::{{ current_user.trial_days_remaining }}"
+             class="bg-blue-50 border-b border-blue-200 hidden">
             <div class="max-w-6xl mx-auto px-4 sm:px-6 py-2 flex items-center justify-between gap-3">
                 <p class="text-xs sm:text-sm text-blue-800">
                     Free trial · <span class="font-medium">{{ current_user.trial_days_remaining }} day{{ '' if current_user.trial_days_remaining == 1 else 's' }} left</span>
                 </p>
-                <a href="{{ url_for('main.settings') }}"
-                   class="text-xs sm:text-sm font-medium text-blue-700 hover:text-blue-900 whitespace-nowrap">
-                    Upgrade to Pro →
-                </a>
+                <div class="flex items-center gap-3">
+                    <a href="{{ url_for('main.settings') }}"
+                       class="text-xs sm:text-sm font-medium text-blue-700 hover:text-blue-900 whitespace-nowrap">
+                        Upgrade to Pro →
+                    </a>
+                    <button type="button" data-dismiss-banner aria-label="Dismiss"
+                            class="text-blue-700/70 hover:text-blue-900 transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
             </div>
         </div>
         {% elif current_user.trial_expired %}
-        <div class="bg-yellow-50 border-b border-yellow-200">
+        <div id="trial-banner" data-key="expired"
+             class="bg-yellow-50 border-b border-yellow-200 hidden">
             <div class="max-w-6xl mx-auto px-4 sm:px-6 py-2 flex items-center justify-between gap-3">
                 <p class="text-xs sm:text-sm text-yellow-900">
                     <span class="font-medium">Trial ended.</span> Upgrade to Pro to keep using Timerrr.
                 </p>
-                <a href="{{ url_for('main.settings') }}"
-                   class="text-xs sm:text-sm font-medium text-yellow-900 hover:text-yellow-700 whitespace-nowrap">
-                    Upgrade →
-                </a>
+                <div class="flex items-center gap-3">
+                    <a href="{{ url_for('main.settings') }}"
+                       class="text-xs sm:text-sm font-medium text-yellow-900 hover:text-yellow-700 whitespace-nowrap">
+                        Upgrade →
+                    </a>
+                    <button type="button" data-dismiss-banner aria-label="Dismiss"
+                            class="text-yellow-900/70 hover:text-yellow-900 transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
             </div>
         </div>
         {% endif %}
+        <script>
+            (function () {
+                const banner = document.getElementById("trial-banner");
+                if (!banner) return;
+                const storageKey = "timerrr.trialBannerDismissed";
+                const currentKey = banner.dataset.key;
+                if (localStorage.getItem(storageKey) !== currentKey) {
+                    banner.classList.remove("hidden");
+                }
+                const closeBtn = banner.querySelector("[data-dismiss-banner]");
+                if (closeBtn) {
+                    closeBtn.addEventListener("click", function () {
+                        localStorage.setItem(storageKey, currentKey);
+                        banner.classList.add("hidden");
+                    });
+                }
+            })();
+        </script>
         {% endif %}
 
         <!-- Flash Messages -->
