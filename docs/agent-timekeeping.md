@@ -13,7 +13,7 @@ Or install `requirements.txt` with pip for the web app, and `requirements-mcp.tx
 
 Open `/work`, create a client if necessary, and start a human session. Create a token in Connections. Use the public `/guides/mcp` page for a complete host configuration with absolute paths to the Python executable and `mcp_server.py`.
 
-The bridge reads `TIMERRR_URL` (default `https://timerrr.com`) and `TIMERRR_TOKEN`. Remote URLs require HTTPS; localhost can use HTTP. These variables belong in the local bridge/runner environment, not the Flask deployment. The bridge requires no database access. This is a stdio bridge backed by a bearer-authenticated application API, not a public remote MCP/OAuth server.
+The bridge reads `TIMERRR_URL` (default `https://timerrr.app`) and `TIMERRR_TOKEN`. Remote URLs require HTTPS; localhost can use HTTP. These variables belong in the local bridge/runner environment, not the Flask deployment. The bridge requires no database access. This is a stdio bridge backed by a bearer-authenticated application API, not a public remote MCP/OAuth server.
 
 ## Tools and permissions
 

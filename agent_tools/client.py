@@ -10,7 +10,7 @@ import requests
 
 class TimerrrClient:
     def __init__(self):
-        self.base_url = os.environ.get("TIMERRR_URL", "https://timerrr.com").rstrip("/")
+        self.base_url = os.environ.get("TIMERRR_URL", "https://timerrr.app").rstrip("/")
         parsed = urlsplit(self.base_url)
         if parsed.scheme != "https" and not (
             parsed.scheme == "http"
