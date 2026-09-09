@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width,initial-scale=1">
+        <title>Timerrr work</title><style>
+    body {
+        font: 13px system-ui;
+        margin: 0;
+        padding: 18px;
+        background: #f5f5f0;
+        color: #20271f
+    }
+
+    header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between
+    }
+
+    h1 {
+        font-size: 18px
+    }
+
+    h2 {
+        font-size: 15px
+    }
+
+    article {
+        background: white;
+        padding: 15px;
+        border: 1px solid #dce0d7;
+        margin: 12px 0;
+        border-radius: 5px
+    }
+
+    .metrics {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+        font-family: monospace
+    }
+
+    .metrics span {
+        display: block;
+        font: 11px system-ui;
+        color: #626b60;
+        margin-bottom: 4px
+    }
+
+    button {
+        background: #20271f;
+        color: white;
+        border: 0;
+        border-radius: 4px;
+        padding: 9px 12px;
+        cursor: pointer
+    }
+
+    button:disabled {
+        opacity: .5
+    }
+
+    button:focus-visible,
+    input:focus-visible {
+        outline: 2px solid #365d28;
+        outline-offset: 3px
+    }
+
+    p {
+        color: #626b60
+    }
+
+    input {
+        box-sizing: border-box;
+        width: 100%;
+        padding: 9px;
+        border: 1px solid #dce0d7;
+        border-radius: 4px;
+        margin: 10px 0
+    }
+
+    label {
+        display: block;
+        margin-top: 10px
+    }
+
+    #status {
+        color: #833628
+    }
+
+    .actions {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-top: 12px
+    }
+</style>
+    </head>
+    <body>
+        <header>
+            <h1>timerrr.</h1>
+            <button id="refresh">Refresh</button>
+        </header>
+        <p>Human effort and agent execution, accounted separately.</p>
+        <p id="status" role="status" aria-live="polite"></p>
+        <div id="work">Waiting for work data…</div>
+        <script>
+            let counter = 0,
+                ready = false,
+                refreshing = false;
+            const pending = new Map();
+            const mutationIds = new Map();
+
+            function requestId() {
+                return Array.from(crypto.getRandomValues(new Uint8Array(16)), b => b.toString(16).padStart(2, '0')).join('');
+            }
+            async function mutate(name, args) {
+                const key = JSON.stringify([name, args]);
+                const request_id = mutationIds.get(key) || requestId();
+                mutationIds.set(key, request_id);
+                const result = await tool(name, {
+                    ...args,
+                    request_id
+                });
+                mutationIds.delete(key);
+                return result;
+            }
+
+            function rpc(method, params = {}) {
+                return new Promise((resolve, reject) => {
+                    const id = ++counter;
+                    const timeout = setTimeout(() => {
+                        pending.delete(id);
+                        reject(new Error('Host request timed out.'));
+                    }, 15000);
+                    pending.set(id, {
+                        resolve,
+                        reject,
+                        timeout
+                    });
+                    window.parent.postMessage({
+                        jsonrpc: '2.0',
+                        id,
+                        method,
+                        params
+                    }, '*');
+                });
+            }
+
+            function notify(method, params = {}) {
+                window.parent.postMessage({
+                    jsonrpc: '2.0',
+                    method,
+                    params
+                }, '*');
+            }
+            const esc = t => String(t ?? '').replace(/[&<>"']/g, c => ({
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#39;'
+            } [c]));
+            const duration = s => `${Math.floor(s/60)}m ${Math.floor(s%60)}s`;
+
+            function render(result) {
+                const data = result.structuredContent || JSON.parse(result.content?.find(c => c.type === 'text')?.text || '{}');
+                const items = Array.isArray(data.work) ? data.work : data.work ? [data.work] : [];
+                document.getElementById('work').innerHTML = items.length ? items.map(w => `<article><h2>${esc(w.title)}</h2><p>${esc(w.client_name)} · #${w.id} · ${w.finished_at?'Finished':'Open'}</p><div class="metrics"><div><span>Human effort</span>${duration(w.human_seconds)}</div><div><span>Agent total</span>${duration(w.agent_seconds)}</div><div><span>Elapsed</span>${duration(w.elapsed_seconds)}</div><div><span>Budget remaining</span>${duration(w.budget_remaining_seconds)}</div></div>${w.warnings.map(x=>`<p>${esc(x)}</p>`).join('')}${!w.finished_at?`<label>Receipt note<input maxlength="4000" id="note-${w.id}" placeholder="What changed?"></label><div class="actions"><button data-action="note" data-work="${w.id}">Save note</button><button data-action="finish" data-work="${w.id}">Finish session</button></div>`:''}</article>`).join('') : '<p>No active work. Ask your agent to start a session.</p>';
+                notify('ui/notifications/size-changed', {
+                    height: document.documentElement.scrollHeight
+                });
+            }
+            window.addEventListener('message', e => {
+                if (e.source !== window.parent || !e.data || e.data.jsonrpc !== '2.0') return;
+                const data = e.data;
+                if (data.id !== undefined && pending.has(data.id)) {
+                    const p = pending.get(data.id);
+                    clearTimeout(p.timeout);
+                    pending.delete(data.id);
+                    data.error ? p.reject(new Error(data.error.message)) : p.resolve(data.result);
+                } else if (data.method === 'ui/notifications/tool-result') {
+                    try {
+                        render(data.params);
+                    } catch (err) {
+                        document.getElementById('status').textContent = err.message;
+                    }
+                } else if (data.method === 'ui/resource-teardown' && data.id !== undefined) {
+                    ready = false;
+                    window.parent.postMessage({
+                        jsonrpc: '2.0',
+                        id: data.id,
+                        result: {}
+                    }, '*');
+                }
+            });
+            async function tool(name, args = {}) {
+                const r = await rpc('tools/call', {
+                    name,
+                    arguments: args
+                });
+                if (r.isError) throw new Error(r.content?.[0]?.text || 'Request failed.');
+                return r;
+            }
+            async function refresh() {
+                if (!ready || refreshing) return;
+                refreshing = true;
+                try {
+                    render(await tool('get_active_work'));
+                    document.getElementById('status').textContent = '';
+                } catch (e) {
+                    document.getElementById('status').textContent = e.message;
+                } finally {
+                    refreshing = false;
+                }
+            }
+            document.getElementById('refresh').onclick = refresh;
+            document.getElementById('work').onclick = async e => {
+                const b = e.target.closest('button[data-work]');
+                if (!b) return;
+                b.disabled = true;
+                try {
+                    const work_id = Number(b.dataset.work);
+                    if (b.dataset.action === 'note') {
+                        const text = document.getElementById('note-' + work_id).value;
+                        if (!text.trim()) throw new Error('Enter a note first.');
+                        await mutate('record_work_event', {
+                            work_id,
+                            kind: 'note',
+                            text
+                        });
+                    } else await mutate('finish_work', {
+                        work_id,
+                        summary: 'Finished in the conversation work card.'
+                    });
+                    await refresh();
+                } catch (err) {
+                    document.getElementById('status').textContent = err.message;
+                } finally {
+                    b.disabled = false;
+                }
+            };
+            rpc('ui/initialize', {
+                appInfo: {
+                    name: 'Timerrr',
+                    version: '1.0.0'
+                },
+                appCapabilities: {},
+                protocolVersion: '2026-01-26'
+            }).then(() => {
+                ready = true;
+                notify('ui/notifications/initialized');
+            }).catch(e => document.getElementById('status').textContent = e.message);
+            setInterval(() => {
+                if (!document.hidden && !document.querySelector('input:focus') && ![...document.querySelectorAll('input')].some(i => i.value)) refresh();
+            }, 10000);
+        </script>
+    </body>
+</html>

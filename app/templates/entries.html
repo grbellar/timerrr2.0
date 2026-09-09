@@ -5,10 +5,7 @@
 {% block content %}
 <div class="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
     <!-- Page Title -->
-    <div class="mb-5 sm:mb-6">
-        <h1 class="text-xl sm:text-2xl font-semibold mb-1">Time Entries</h1>
-        <p class="text-sm text-gray-600">View your time entries and make edits as needed.</p>
-    </div>
+    <div class="page-heading"><div><div class="eyebrow">03 / Review</div><h1>Entries</h1><p>A clear record of your time. Filter, correct, and keep moving.</p></div></div>
 
     <!-- Filters Section -->
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-5 mb-4 sm:mb-5">
@@ -307,7 +304,7 @@
                                 <!-- Entry Details -->
                                 <div class="flex-1">
                                     <div class="flex items-center gap-3 mb-0.5">
-                                        <h3 class="font-semibold text-sm sm:text-base">${entry.client_name}</h3>
+                                        <h3 class="font-semibold text-sm sm:text-base">${escapeHtml(entry.client_name)}</h3>
                                         ${entry.is_running ? `
                                             <div class="flex items-center gap-1.5">
                                                 <div class="w-2 h-2 bg-green-500 rounded-full"></div>
@@ -315,7 +312,7 @@
                                             </div>
                                         ` : ''}
                                     </div>
-                                    <div class="text-xs sm:text-sm text-gray-600">${entry.notes || 'No description'}</div>
+                                    <div class="text-xs sm:text-sm text-gray-600">${escapeHtml(entry.notes || 'No description')}</div>
                                     <div class="text-xs text-gray-500 mt-0.5">${formatDateRange(entry.start_time, entry.end_time)}</div>
                                 </div>
 

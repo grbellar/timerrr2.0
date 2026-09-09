@@ -5,11 +5,9 @@
 {% block content %}
 <div class="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
     <!-- Page Title Section -->
-    <div class="mb-5 sm:mb-6">
-        <h1 class="text-xl sm:text-2xl font-semibold mb-1">Time Tracking</h1>
-        <p class="text-sm text-gray-600">Track time across multiple clients.</p>
-    </div>
+    <div class="page-heading"><div><div class="eyebrow">01 / Capture</div><h1>Timers</h1><p>Choose a client. Start working. Your timer stays in sync.</p></div></div>
 
+    <p id="timer-feedback" class="status-message notice error" role="alert"></p>
     <!-- Timer Cards Container -->
     <div id="timer-cards" class="space-y-4">
         {% if client_timers %}
@@ -99,32 +97,28 @@
         }
     });
 
-    // Toggle timer function
-    function toggleTimer(clientId) {
+    // A successful HTTP response updates this device even before Socket.IO connects.
+    async function toggleTimer(clientId) {
         const card = document.querySelector(`[data-client-id="${clientId}"]`);
         const button = card.querySelector('.timer-button');
+        if (button.disabled) return;
         const isRunning = button.dataset.running === 'true';
-
-        if (isRunning) {
-            // Stop timer
-            const notesInput = card.querySelector('.timer-notes');
-            fetch(`/api/clients/${clientId}/timer/stop`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    notes: notesInput.value
-                })
+        button.disabled = true;
+        const status = document.getElementById('timer-feedback');
+        try {
+            const response = await fetch(`/api/clients/${clientId}/timer/${isRunning ? 'stop' : 'start'}`, {
+                method: isRunning ? 'PUT' : 'POST',
+                headers: {'Content-Type': 'application/json'},
+                ...(isRunning ? {body: JSON.stringify({notes: card.querySelector('.timer-notes').value})} : {})
             });
-        } else {
-            // Start timer
-            fetch(`/api/clients/${clientId}/timer/start`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            });
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.error || 'Could not update the timer.');
+            updateTimerCard(clientId, !isRunning, data.id, data.start_time, data.notes || '');
+            status.textContent = '';
+        } catch (error) {
+            status.textContent = error.message;
+        } finally {
+            button.disabled = false;
         }
     }
 

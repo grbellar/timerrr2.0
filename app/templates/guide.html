@@ -1,0 +1,81 @@
+{% extends "public_base.html" %}
+{% block metadata %}
+    <!-- djlint:off -->
+    <script type="application/ld+json">{{ {"@context":"https://schema.org","@type":"TechArticle","headline":page_title,"description":description,"url":"https://timerrr.com"+request.path,"author":{"@type":"Organization","name":"Timerrr"}}|tojson }}</script>
+    <!-- djlint:on -->
+{% endblock %}
+{% block content %}<article class="article"><div class="eyebrow">Timerrr / Field guide</div><h1>{{ page_title }}</h1>
+{% if slug == "parallel-time" %}
+    <p>When three agents each run for ten minutes at the same time, the job takes ten elapsed minutes and consumes thirty agent-minutes. Any human work is measured separately, even when it happens during those same ten minutes.</p>
+    {% include "calculator.html" %}
+    <h2>What the numbers mean</h2>
+    <p><strong>Elapsed time</strong> measures the interval from a work session’s start to its finish. <strong>Agent total</strong> adds each recorded agent execution interval. <strong>Human effort</strong> merges overlapping human intervals within a session so the same minute is only counted once.</p>
+    <p>The calculator assumes simultaneous starts and uninterrupted activity. Real sessions can start actors at different times, pause human work, and explicitly record waiting. Timerrr calculates each actor’s recorded intervals, rather than multiplying the whole session by its actor count.</p>
+    <h2>Overlapping effort is not automatically billable time</h2>
+    <p>A ten-minute session might contain five human minutes and thirty agent-minutes. Timerrr proposes only recorded human intervals for timesheet review. Your client agreement determines billing; the app does not automatically price agent execution at your human hourly rate.</p>
+    <p><a href="/guides/agent-timekeeping">Read the full accounting model</a> or <a href="/guides/mcp">connect an agent</a>.</p>
+    <script src="{{ url_for('static', filename='js/calculator.js') }}" defer></script>
+{% elif slug == "agent-timekeeping" %}
+    <p>Timerrr records human effort, agent execution, and waiting separately. A work receipt connects those measurements to a client, a task, notes, and optional artifact links. An agent can propose a timesheet; a person reviews it before entries are created.</p>
+    <h2>A concrete example</h2>
+    <p>You spend twelve minutes reviewing a checkout fix. An agent runs for twenty-six minutes, with four minutes overlapping your review. If those intervals cover the entire session, elapsed time is thirty-four minutes. The receipt reports twelve human minutes and twenty-six agent-minutes. The proposed time entries contain the recorded human intervals.</p>
+    <h2>Execution records are evidence, not proof of continuous effort</h2>
+    <p>A runner records how long a command is alive, including any waits inside it. MCP tool calls can report actor transitions, but a model may miss a transition. Artifact timestamps do not establish how long someone worked. Timerrr preserves source labels and flags disconnected agents rather than inventing missing hours.</p>
+    <h2>What happens when an agent disconnects?</h2>
+    <p>An agent execution interval uses a 120-second lease. Heartbeats renew it, normally every thirty seconds. Recorded execution ends at the earlier of the last lease expiry or the session’s agent budget deadline. A receipt can still include up to 120 seconds of uncertainty after the last heartbeat. Server reads cap the duration even before an expired span is finalized by the next write.</p>
+    <p>The budget is an elapsed deadline from session start; parallel agents share that deadline. It is not a pooled agent-minute budget. The optional runner terminates its local command at the cutoff. An ordinary MCP client must honor the returned deadline and continue_work flag itself.</p>
+    <h2>How a draft becomes a timesheet</h2>
+    <ol>
+        <li>Finish work sessions and attach useful references.</li>
+        <li>Choose a date range of up to 93 days. Only finished, unreviewed sessions fully within the range are included.</li>
+        <li>Review the proposed human intervals, edit their notes and boundaries within the session, or exclude them.</li>
+        <li>Approve the draft in the website. Overlapping human intervals and overlaps with existing entries are rejected.</li>
+        <li>Use the existing Timesheets screen to generate a CSV at the client’s configured hourly rate.</li>
+    </ol>
+    <p>Agent execution and explicitly recorded waiting are excluded from proposals. A session without human activity produces no proposed hours. Review finalizes all sessions in that draft, including excluded intervals, and records the decision in their receipts. Existing entries can still be corrected through the Entries screen.</p>
+    <h2>What is included in a work receipt?</h2>
+    <p>The session title and client, server timestamps, actor intervals, execution leases, budget, source-labeled events, artifact URLs, warnings, and human review outcome. The original evidence is retained when review adjusts proposed time. Download a receipt as JSON from Agent work.</p>
+    <p><a href="/guides/parallel-time">Explore parallel time</a> or <a href="/guides/mcp">set up MCP</a>.</p>
+{% else %}
+    <p>The Timerrr MCP bridge lets a compatible local MCP host record client work, track separate actors, attach evidence, and prepare human time for review. It uses a revocable account token and the official Python MCP SDK over stdio.</p>
+    <h2>1. Create a scoped token</h2>
+    <p>Sign in and open <a href="/work#connections">Agent work → Connections</a>. Create a token with Read work, Record work, and Draft time permissions. Save it when it appears. Tokens expire after ninety days and can be revoked in the same panel. An active trial or subscription is required.</p>
+    <h2>2. Install the local bridge</h2>
+    <p>From your local Timerrr source checkout, install the optional MCP requirements into a Python environment:</p>
+    <pre><code>python -m venv .venv
+.venv/bin/pip install -r requirements-mcp.txt</code></pre>
+    <p>Use Python 3.11 or newer. The bridge does not need a local database or Flask server; it connects to the URL you configure.</p>
+    <h2>3. Configure your MCP host</h2>
+    <p>For hosts that accept the common mcpServers configuration, use absolute paths and your own token. Select a host that supports stdio servers. Keep this configuration private.</p>
+    <pre><code>{
+  "mcpServers": {
+    "timerrr": {
+      "command": "/absolute/path/timerrr/.venv/bin/python",
+      "args": ["/absolute/path/timerrr/mcp_server.py"],
+      "env": {
+        "TIMERRR_URL": "https://timerrr.com",
+        "TIMERRR_TOKEN": "YOUR_TOKEN"
+      }
+    }
+  }
+}</code></pre>
+    <p>For a local app, use http://127.0.0.1:5001. HTTPS is required for other hosts. This release uses a local stdio bridge, not a hosted OAuth MCP endpoint. The pinned SDK targets the 2025-11-25 protocol for compatibility.</p>
+    <h2>4. Try a recorded session</h2>
+    <p>Ask your agent: “List my clients. Start Acme’s checkout fix with a twenty-minute agent budget. Track your execution under your own actor ID, attach the result, and finish the session. Do not infer my human effort.”</p>
+    <p>The tools are <code>list_clients</code>, <code>get_active_work</code>, <code>get_work</code>, <code>start_work</code>, <code>record_work_event</code>, <code>finish_work</code>, <code>draft_timesheet</code>, and <code>get_draft</code>. Every mutation requires a unique request_id. Reuse that exact ID and arguments when retrying an uncertain response.</p>
+    <p>For delegation, start a human session in the website and give its session ID to your agent. It can join with actor_started, actor_kind agent, and a distinct actor_id. Agents should heartbeat every thirty seconds and stop if continue_work is false. Record waiting under a separate waiting actor and stop the active actor when transitioning.</p>
+    <h2 id="runner">Enforce a command’s time budget</h2>
+    <p>The optional POSIX runner stops a subprocess and its process group at its elapsed cutoff, renews leases in the background, and records its result. Set TIMERRR_URL and TIMERRR_TOKEN in your environment, then run from the source checkout:</p>
+    <pre><code>.venv/bin/python -m agent_tools.runner \
+  --client-id 1 --title "Checkout fix" --budget 1200 \
+  -- python your_agent_task.py</code></pre>
+    <p>Use <code>--work-id 42</code> to join an existing session; the runner then stops only its own actor. Use <code>--artifact https://example.com/pull/42</code> to attach an output reference. The child process does not receive TIMERRR_TOKEN. Commands that deliberately detach from the process group need enforcement in their own execution environment.</p>
+    <h2>A live card inside the conversation</h2>
+    <p>In hosts supporting MCP Apps, get_work and get_active_work expose an interactive card with separate totals, remaining budget, receipt notes, and a Finish session control. Other hosts receive the same accounting as structured data and text. Host support for the UI extension varies.</p>
+    <h2>Review before export</h2>
+    <p>Ask for a draft with explicit ISO timestamps and timezone offsets. Open <a href="/work#review">Agent work → Human review</a> to adjust and approve the proposed human intervals. Approval is only available in the website. Then generate the client CSV in Timesheets.</p>
+    <p>Timerrr does not import your issue tracker or infer hours from commits. Agents can attach links from tools you already use. <a href="/guides/agent-timekeeping">Read the accounting and uncertainty rules</a>.</p>
+    <p class="quiet">Protocol references: <a href="https://github.com/modelcontextprotocol/python-sdk/tree/v1.26.0">Python MCP SDK v1.26.0</a> · <a href="https://modelcontextprotocol.io/extensions/apps/overview">MCP Apps</a>.</p>
+{% endif %}
+</article>
+{% endblock %}

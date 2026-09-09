@@ -65,6 +65,10 @@ def create_app():
     app.register_blueprint(stripe_bp)
     app.register_blueprint(timesheets)
     app.register_blueprint(admin)
+    from app.work import work_bp
+    from app.guides import guides
+    app.register_blueprint(work_bp)
+    app.register_blueprint(guides)
 
     # Create database tables
     with app.app_context():

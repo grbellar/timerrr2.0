@@ -118,6 +118,10 @@ def delete_client(client_id):
     if not client:
         return jsonify({"error": "Client not found"}), 404
 
+    from app.models import WorkSession
+    if WorkSession.query.filter_by(client_id=client.id, user_id=current_user.id).first():
+        return jsonify({"error": "This client has work receipts and cannot be deleted."}), 409
+
     db.session.delete(client)
     db.session.commit()
 

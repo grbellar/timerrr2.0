@@ -54,7 +54,7 @@ cp .env.example .env
 
 5. Run the application:
 ```bash
-python app.py
+python run.py
 # Or use the start script
 ./start.sh
 ```
@@ -70,7 +70,7 @@ Create a `.env` file in the project root with:
 ```bash
 # Flask Configuration
 SECRET_KEY=your-secret-key-here
-DATABASE_URL=sqlite:///timerrr.db
+DATABASE_PATH=timerrr.db
 
 # Stripe Configuration (Optional - for Pro features)
 STRIPE_SECRET_KEY=sk_test_...
@@ -218,7 +218,7 @@ The application uses Socket.IO for real-time updates:
 
 ```bash
 # With debug mode enabled
-python app.py
+python run.py
 
 # The app will auto-reload on code changes
 ```
@@ -228,7 +228,7 @@ python app.py
 ```bash
 # Run with test Stripe keys
 export STRIPE_SECRET_KEY=sk_test_...
-python app.py
+python run.py
 ```
 
 ### Database Migrations
@@ -240,7 +240,7 @@ The database schema is automatically created on first run. To reset:
 rm timerrr.db
 
 # Restart the app to recreate tables
-python app.py
+python run.py
 ```
 
 ## Deployment
@@ -282,3 +282,10 @@ For issues, questions, or feedback, please open an issue on GitHub or contact th
 - Styled with [Tailwind CSS](https://tailwindcss.com/)
 - Payments powered by [Stripe](https://stripe.com/)
 - Real-time features via [Socket.IO](https://socket.io/)
+## Agent work and MCP
+
+Track human effort, parallel agent execution, and waiting separately. Agent work includes work receipts, expiring execution leases, a budget-enforcing command runner, an optional MCP conversation card, and human-reviewed timesheet drafts.
+
+See [setup, accounting rules, and testing](docs/agent-timekeeping.md). The public `/guides/mcp`, `/guides/agent-timekeeping`, and `/guides/parallel-time` pages include setup instructions and an interactive calculator.
+
+Install the optional bridge with `pip install -r requirements-mcp.txt` or `uv sync --extra mcp`. Run the backend checks with `python -m unittest discover -s tests -v`.

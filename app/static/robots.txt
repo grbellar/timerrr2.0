@@ -3,6 +3,7 @@ Allow: /
 Disallow: /login
 Disallow: /register
 Disallow: /timer
+Disallow: /work
 Disallow: /entries
 Disallow: /timesheets
 Disallow: /settings

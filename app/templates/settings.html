@@ -6,9 +6,10 @@
 <div class="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
     <!-- Page Title -->
     <div class="mb-5 sm:mb-6">
-        <h1 class="text-xl sm:text-2xl font-semibold">Settings</h1>
+        <div class="eyebrow">05 / Configure</div><h1 class="text-xl sm:text-2xl font-semibold">Settings</h1>
     </div>
 
+    <p class="mb-5 text-sm"><a class="text-blue-700 underline" href="/work#connections">Manage agent connections and MCP tokens</a></p>
     <!-- Profile Section -->
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-5 mb-4 sm:mb-5">
         <h2 class="text-base font-semibold mb-4">Profile</h2>
@@ -92,7 +93,7 @@
                     <span class="text-xs text-gray-500 ml-2">($<span class="client-rate">{{ "%.2f"|format(client.hourly_rate) }}</span>/hr)</span>
                 </div>
                 <div class="flex items-center space-x-3">
-                    <button onclick="editClient({{ client.id }}, '{{ client.name }}', {{ client.hourly_rate }})"
+                    <button data-edit-client onclick='editClient({{ client.id }}, {{ client.name|tojson }}, {{ client.hourly_rate }})'
                             class="text-blue-600 hover:text-blue-700 text-sm font-medium">Edit</button>
                     <button onclick="deleteClient({{ client.id }})"
                             class="text-red-600 hover:text-red-700 text-sm font-medium">Delete</button>
@@ -249,8 +250,9 @@ async function saveClient() {
                 clientEl.querySelector('.client-name').textContent = data.name;
                 clientEl.querySelector('.client-rate').textContent = data.hourly_rate.toFixed(2);
                 // Update the edit button's onclick
-                const editBtn = clientEl.querySelector('button[onclick*="editClient"]');
-                editBtn.setAttribute('onclick', `editClient(${data.id}, '${data.name}', ${data.hourly_rate})`);
+                const editBtn = clientEl.querySelector('button[data-edit-client]');
+                editBtn.removeAttribute('onclick');
+                editBtn.onclick = () => editClient(data.id, data.name, data.hourly_rate);
             }
         } else {
             // Add new client to list
@@ -265,16 +267,17 @@ async function saveClient() {
             newClientEl.setAttribute('data-client-id', data.id);
             newClientEl.innerHTML = `
                 <div>
-                    <span class="text-sm text-gray-700 client-name">${data.name}</span>
+                    <span class="text-sm text-gray-700 client-name">${escapeHtml(data.name)}</span>
                     <span class="text-xs text-gray-500 ml-2">($<span class="client-rate">${data.hourly_rate.toFixed(2)}</span>/hr)</span>
                 </div>
                 <div class="flex items-center space-x-3">
-                    <button onclick="editClient(${data.id}, '${data.name}', ${data.hourly_rate})"
+                    <button data-edit-client
                             class="text-blue-600 hover:text-blue-700 text-sm font-medium">Edit</button>
                     <button onclick="deleteClient(${data.id})"
                             class="text-red-600 hover:text-red-700 text-sm font-medium">Delete</button>
                 </div>
             `;
+            newClientEl.querySelector('[data-edit-client]').onclick = () => editClient(data.id, data.name, data.hourly_rate);
             clientsList.appendChild(newClientEl);
         }
 

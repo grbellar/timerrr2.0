@@ -163,3 +163,73 @@ class Timesheet(db.Model):
 
     def __repr__(self):
         return f"<Timesheet {self.id} - {self.client.name if self.client else 'No Client'} {self.month}/{self.year}>"
+
+
+class AgentToken(db.Model):
+    __tablename__ = "agent_tokens"
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False, index=True)
+    name = db.Column(db.String(100), nullable=False)
+    token_hash = db.Column(db.String(64), unique=True, nullable=False)
+    scopes = db.Column(db.String(100), nullable=False)
+    created_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
+    expires_at = db.Column(db.DateTime, nullable=False)
+    revoked_at = db.Column(db.DateTime)
+
+
+class WorkSession(db.Model):
+    __tablename__ = "work_sessions"
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False, index=True)
+    client_id = db.Column(db.Integer, db.ForeignKey("clients.id"), nullable=False)
+    title = db.Column(db.String(300), nullable=False)
+    started_at = db.Column(db.DateTime, nullable=False)
+    finished_at = db.Column(db.DateTime)
+    budget_seconds = db.Column(db.Integer, nullable=False)
+    approved_at = db.Column(db.DateTime)
+    spans = db.relationship("WorkSpan", backref="work", lazy=True, cascade="all, delete-orphan")
+    events = db.relationship("WorkEvent", backref="work", lazy=True, cascade="all, delete-orphan")
+
+
+class WorkSpan(db.Model):
+    __tablename__ = "work_spans"
+    id = db.Column(db.Integer, primary_key=True)
+    work_id = db.Column(db.Integer, db.ForeignKey("work_sessions.id"), nullable=False, index=True)
+    actor_id = db.Column(db.String(100), nullable=False)
+    actor_kind = db.Column(db.String(10), nullable=False)
+    started_at = db.Column(db.DateTime, nullable=False)
+    ended_at = db.Column(db.DateTime)
+    lease_until = db.Column(db.DateTime)
+    stop_reason = db.Column(db.String(30))
+
+
+class WorkEvent(db.Model):
+    __tablename__ = "work_events"
+    id = db.Column(db.Integer, primary_key=True)
+    work_id = db.Column(db.Integer, db.ForeignKey("work_sessions.id"), nullable=False, index=True)
+    at = db.Column(db.DateTime, nullable=False)
+    kind = db.Column(db.String(30), nullable=False)
+    actor_id = db.Column(db.String(100))
+    source = db.Column(db.String(100), nullable=False)
+    data = db.Column(db.JSON, nullable=False)
+
+
+class WorkOperation(db.Model):
+    """Persist responses so retries cannot duplicate work."""
+    __tablename__ = "work_operations"
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    request_id = db.Column(db.String(100), nullable=False)
+    fingerprint = db.Column(db.String(64), nullable=False)
+    response = db.Column(db.JSON, nullable=False)
+    __table_args__ = (db.UniqueConstraint("user_id", "request_id"),)
+
+
+class WorkDraft(db.Model):
+    __tablename__ = "work_drafts"
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False, index=True)
+    created_at = db.Column(db.DateTime, nullable=False)
+    approved_at = db.Column(db.DateTime)
+    data = db.Column(db.JSON, nullable=False)
+    approval = db.Column(db.JSON)

@@ -1,0 +1,19 @@
+<div class="panel" id="parallel-calculator">
+    <div class="calculator-fields">
+        <label for="calc-agents">
+            Parallel agents <output id="agents-label">3</output><input id="calc-agents" type="range" min="1" max="8" value="3"></label><label for="calc-duration">Each agent runs · minutes<input id="calc-duration"
+       type="number"
+       min="1"
+       max="1440"
+       value="10"
+       required></label><label for="calc-human">Human effort · minutes<input id="calc-human" type="number" min="0" max="1440" value="5" required>
+            </label>
+        </div>
+        <p class="quiet">Assumption: all actors start together and work continuously for the specified duration. Human effort can extend beyond agent execution.</p>
+        <div id="calc-timeline" class="timeline" aria-hidden="true"></div>
+        <div id="calc-result"
+             class="calculator-result"
+             role="status"
+             aria-live="polite"></div>
+        <p class="quiet">Elapsed time is the longest duration. Agent-minutes add across agents. Neither number determines what you bill.</p>
+    </div>
