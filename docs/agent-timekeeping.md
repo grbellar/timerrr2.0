@@ -96,3 +96,12 @@ python tests/mcp_app_checks.py
 The first script provisions a disposable server/database, checks desktop and mobile layouts, approves a draft without losing timestamp precision, exercises original timer controls, checks note escaping, downloads a CSV, and edits a client name containing an apostrophe. The second uses a simulated MCP Apps host to check the UI handshake, receipt rendering, note saving, and finish control. Actual third-party host integration still depends on that host's extension support. Chromium may require its usual OS libraries and fonts.
 
 Screenshots from the browser checks are available in [screenshots](screenshots/). Stripe billing was not exercised because test keys were not configured.
+
+## Homepage agent setup
+
+The homepage banner copies a prompt pointing to `/agent-setup/prompt.md`.
+That public Markdown route gives an agent the account-token, local bridge,
+host configuration, and read-only verification steps. Copying the prompt does
+not itself grant access. If clipboard access is denied, the homepage exposes
+a selectable copy of the prompt. The same setup file is maintained at
+`app/static/agent-setup/prompt.md`.

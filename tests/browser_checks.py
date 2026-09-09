@@ -36,6 +36,27 @@ try:
         errors = []
         page.on("pageerror", lambda e: errors.append(str(e)))
         page.goto(BASE_URL + "/")
+        # Copy the exact onboarding prompt, including a denied-clipboard fallback.
+        page.context.grant_permissions(
+            ["clipboard-read", "clipboard-write"], origin=BASE_URL
+        )
+        page.locator("#copy-agent-setup").click()
+        page.wait_for_function(
+            "document.querySelector('#setup-copy-status').textContent.startsWith('Copied')"
+        )
+        expected_prompt = "Fetch and execute the appropriate instructions to set me up for Timerrr from https://timerrr.app/agent-setup/prompt.md"
+        assert page.evaluate("navigator.clipboard.readText()") == expected_prompt
+        setup = page.request.get(BASE_URL + "/agent-setup/prompt.md")
+        assert setup.status == 200
+        assert "text/markdown" in setup.headers["content-type"]
+        assert "list_clients" in setup.text()
+        page.evaluate(
+            "Object.defineProperty(navigator, 'clipboard', {configurable: true, value: {writeText: () => Promise.reject(new Error('denied'))}})"
+        )
+        page.locator("#copy-agent-setup").click()
+        page.locator("#setup-prompt-text").wait_for()
+        assert page.locator("#setup-prompt-text").input_value() == expected_prompt
+        page.reload()
         page.get_by_role("button", name="Start timer", exact=True).click()
         page.wait_for_function(
             "document.querySelector('#demo-clock').textContent !== '0:00:00'"

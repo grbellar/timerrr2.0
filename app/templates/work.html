@@ -4,22 +4,20 @@
 <div class="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-10" id="work-app" data-csrf="{{ csrf_token }}">
     <div class="page-heading">
         <div>
-            <div class="eyebrow">02 / Delegate</div>
-            <h1>Work together. Account separately.</h1>
-            <p>Human effort, agent execution, and waiting—with a receipt for each session.</p>
+            <h1>Agent work</h1>
         </div>
-        <a class="btn" href="/guides/mcp">Connection guide ↗</a>
+        <a class="btn" href="/guides/mcp">MCP setup</a>
     </div>
     <div id="work-message" class="notice status-message" role="status" aria-live="polite"></div>
     <div class="work-layout">
         <div>
             <section class="panel">
-                <h2>Start a session</h2>
+                <h2>New session</h2>
                 {% if clients %}
                 <form id="start-work" class="form-grid">
                     <label class="form-wide">
-                        What are you working on?
-                        <input name="title" required maxlength="300" placeholder="e.g. Acme checkout fix">
+                        Task
+                        <input name="title" required maxlength="300" placeholder="Checkout fix">
                     </label>
                     <label>
                         Client
@@ -30,12 +28,11 @@
                         </select>
                     </label>
                     <label>
-                        Agent budget · elapsed minutes
+                        Agent deadline · minutes from start
                         <input name="budget" type="number" min="1" max="1440" value="20" required>
                     </label>
                     <div class="form-wide action-row">
                         <button class="btn btn-primary" type="submit">Start my work</button>
-                        <span class="quiet">Starts your human timer. Agents can join this session.</span>
                     </div>
                 </form>
                 {% else %}
@@ -44,7 +41,7 @@
                 {% endif %}
             </section>
             <div class="panel-head">
-                <h2>Work sessions</h2>
+                <h2>Sessions</h2>
                 <button id="refresh-work" class="btn">Refresh</button>
             </div>
             <div id="work-list">
@@ -52,9 +49,7 @@
             </div>
             <button id="more-work" class="btn hidden">Load older sessions</button>
             <section class="panel" id="review">
-                <div class="eyebrow">Human review</div>
-                <h2>Reconstruct a timesheet</h2>
-                <p class="quiet">Use finished sessions as evidence. Review proposed human intervals before adding them to Entries.</p>
+                <h2>Timesheet draft</h2>
                 <form id="draft-form">
                     <div class="form-grid">
                         <label>From · local date<input name="start" type="date" required></label>
@@ -67,21 +62,12 @@
             </section>
         </div>
         <aside>
-            <section class="panel">
-                <div class="eyebrow">How time adds up</div>
-                <h2>Three clocks. One record.</h2>
-                <p class="quiet"><strong>Human</strong> is the union of your recorded effort.</p>
-                <p class="quiet"><strong>Agent</strong> adds execution across actors. Parallel agents accumulate time together.</p>
-                <p class="quiet"><strong>Waiting</strong> is explicitly recorded and excluded from proposed billable time.</p>
-                <a class="quiet" href="/guides/parallel-time">Explore the calculator ↗</a>
-            </section>
             <section class="panel" id="connections">
-                <div class="eyebrow">Connections</div>
-                <h2>Give an agent access</h2>
-                <p class="quiet">Tokens expire after 90 days. Save the token when it appears; it is only shown once.</p>
+                <h2>Connections</h2>
+                <p class="quiet">Tokens expire after 90 days.</p>
                 <form id="token-form">
                     <label class="form-grid">
-                        Connection name
+                        Name
                         <input name="name" required maxlength="100" placeholder="My workstation">
                     </label>
                     <div class="action-row">
@@ -92,6 +78,7 @@
                     <div class="action-row"><button class="btn" type="submit">Create token</button></div>
                 </form>
                 <div id="new-token" hidden>
+                    <p class="quiet">Copy this token. It is shown only once.</p>
                     <code class="token-output" id="token-value"></code>
                     <button class="btn" id="hide-token">Hide token</button>
                 </div>

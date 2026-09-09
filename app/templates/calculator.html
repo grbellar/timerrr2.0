@@ -9,11 +9,11 @@
        required></label><label for="calc-human">Human effort · minutes<input id="calc-human" type="number" min="0" max="1440" value="5" required>
             </label>
         </div>
-        <p class="quiet">Assumption: all actors start together and work continuously for the specified duration. Human effort can extend beyond agent execution.</p>
+        <p class="quiet">All actors start together and work without pauses.</p>
         <div id="calc-timeline" class="timeline" aria-hidden="true"></div>
         <div id="calc-result"
              class="calculator-result"
              role="status"
              aria-live="polite"></div>
-        <p class="quiet">Elapsed time is the longest duration. Agent-minutes add across agents. Neither number determines what you bill.</p>
+        <p class="quiet">Agent time is not automatically billable.</p>
     </div>

@@ -20,21 +20,24 @@
 {% endblock %}
 {% block content %}
     <div class="public-wrap">
+        <button class="agent-setup-banner" id="copy-agent-setup" type="button"
+                data-prompt="Fetch and execute the appropriate instructions to set me up for Timerrr from https://timerrr.app/agent-setup/prompt.md">
+            <span>Set up your agent</span>
+            <span class="mono" id="setup-copy-status" role="status" aria-live="polite">Copy prompt</span>
+        </button>
+        <div id="setup-copy-fallback" class="panel hidden">
+            <label for="setup-prompt-text">Copy this prompt into your agent</label>
+            <textarea id="setup-prompt-text" rows="3" readonly></textarea>
+        </div>
         <section class="public-hero">
             <div>
-                <div class="eyebrow">For independent work. And the agents helping with it.</div>
-                <h1>
-                    Good work.
-                    <br>
-                    Clear time.
-                </h1>
-                <p>One click to track your time. A separate clock for your agents. A clear record of what happened, ready for your review.</p>
-                <div class="action-row"><a href="/register" class="btn btn-primary">Start your 7-day trial →</a><a href="/guides/mcp" class="btn">Connect an agent</a></div>
+                <h1>Time tracking.</h1>
+                <div class="action-row"><a href="/register" class="btn btn-primary">Start free trial</a></div>
                 <p style="font-size:12px;
-                          margin-top:16px">$7/month after your trial. Client timers, work receipts, and CSV timesheets.</p>
+                          margin-top:16px">7 days free. Then $7/month.</p>
             </div>
             <div class="panel">
-                <div class="panel-head"><span class="eyebrow" style="margin:0">Try a timer · demo only</span><span class="badge" id="demo-state">Ready</span></div>
+                <div class="panel-head"><span class="eyebrow" style="margin:0">Demo · not saved</span><span class="badge" id="demo-state">Ready</span></div>
                 <h2>Acme / Checkout fix</h2>
                 <div class="mono"
                      style="font-size:54px;
@@ -42,8 +45,8 @@
                             margin:30px 0"
                      id="demo-clock"
                      role="timer">0:00:00</div>
-                <label for="demo-notes">What are you working on?</label><input id="demo-notes"
-       placeholder="Add a note to your work"
+                <label for="demo-notes">Notes</label><input id="demo-notes"
+       placeholder="Optional"
        style="width:100%;
               margin:8px 0 18px">
                 <div class="action-row">
@@ -51,51 +54,15 @@
                             class="btn btn-primary">Start timer</button><button id="demo-reset"
         class="btn">Reset</button>
                 </div>
-                <p class="quiet"
-                   style="margin:18px 0 0">Try it here. This demo stays in your browser and is not saved.</p>
             </div>
         </section>
         <section class="public-section">
-            <div class="eyebrow">A record that matches the work</div>
-            <h2>Your time and agent time tell different stories.</h2>
-            <div class="feature-grid">
-                <div>
-                    <span class="mono quiet">01 / Capture</span>
-                    <h3>Keep your hands on the work.</h3>
-                    <p>Start a client timer in one click. Notes and running timers stay in sync across your devices.</p>
-                </div>
-                <div>
-                    <span class="mono quiet">02 / Delegate</span>
-                    <h3>Give agents their own clock.</h3>
-                    <p>Record parallel execution, set an elapsed time budget, and link the output to a work receipt.</p>
-                </div>
-                <div>
-                    <span class="mono quiet">03 / Review</span>
-                    <h3>Know what enters a timesheet.</h3>
-                    <p>Review proposed human intervals and correct overlaps. Agent minutes never automatically become human billable hours.</p>
-                </div>
-            </div>
-        </section>
-        <section class="public-section"><div class="eyebrow">Parallel work, explained</div><h2>Three agents. Ten minutes. How much time?</h2><p class="quiet">Ten elapsed minutes and thirty agent-minutes. Human effort is a separate measurement.</p>{% include "calculator.html" %}<a href="/guides/parallel-time">See how the calculation works →</a></section>
-        <section class="public-section feature-grid">
-            <div>
-                <h3>Use it from your agent.</h3>
-                <p>The MCP bridge lets a compatible host start sessions, add evidence, read receipts, and prepare drafts.</p>
-                <a href="/guides/mcp">Read the setup guide →</a>
-            </div>
-            <div>
-                <h3>A budget that stops a command.</h3>
-                <p>The optional local runner enforces an elapsed cutoff and renews execution leases. It works with commands you choose to run.</p>
-                <a href="/guides/mcp#runner">Use the runner →</a>
-            </div>
-            <div>
-                <h3>Keep a work receipt.</h3>
-                <p>Review actor activity, linked artifacts, notes, and uncertainty. Download the record as JSON.</p>
-                <a href="/guides/agent-timekeeping">Understand the accounting →</a>
-            </div>
+            <h2>Parallel time</h2>
+            {% include "calculator.html" %}
         </section>
     </div>
     <script src="{{ url_for('static', filename='js/calculator.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='js/agent-setup.js') }}" defer></script>
     <script>
         (() => {
             let running = false,

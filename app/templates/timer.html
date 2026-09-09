@@ -5,7 +5,7 @@
 {% block content %}
 <div class="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
     <!-- Page Title Section -->
-    <div class="page-heading"><div><div class="eyebrow">01 / Capture</div><h1>Timers</h1><p>Choose a client. Start working. Your timer stays in sync.</p></div></div>
+    <div class="page-heading"><h1>Timers</h1></div>
 
     <p id="timer-feedback" class="status-message notice error" role="alert"></p>
     <!-- Timer Cards Container -->
@@ -38,7 +38,7 @@
                     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                         <input type="text"
                             class="timer-notes w-full sm:w-1/3 px-2.5 py-1.5 border border-gray-200 rounded-md text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-gray-50"
-                            placeholder="What are you working on? Add notes here"
+                            placeholder="Notes"
                             value="{% if item.running_timer %}{{ item.running_timer.notes or '' }}{% endif %}"
                             data-timer-id="{% if item.running_timer %}{{ item.running_timer.id }}{% endif %}"
                             {% if not item.running_timer %}disabled{% endif %}>
@@ -53,8 +53,8 @@
             {% endfor %}
         {% else %}
             <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
-                <p class="text-gray-500 mb-4">No clients found. Create a client to start tracking time.</p>
-                <a href="/settings" class="text-blue-600 hover:text-blue-700 font-medium">Go to Settings</a>
+                <p class="text-gray-500 mb-4">No clients yet.</p>
+                <a href="/settings" class="text-blue-600 hover:text-blue-700 font-medium">Add client</a>
             </div>
         {% endif %}
     </div>

@@ -8,7 +8,7 @@
               content="{{ description|default('Track your time and your agents’ execution separately. Client timers, work receipts, MCP tools, and reviewed CSV timesheets.') }}">
         <link rel="canonical" href="https://timerrr.app{{ request.path }}">
         <meta property="og:title"
-              content="{{ page_title|default('Time, accounted for.') }} · Timerrr">
+              content="{{ page_title|default('Time tracking') }} · Timerrr">
         <meta property="og:type" content="website">
         <meta property="og:url" content="https://timerrr.app{{ request.path }}">
         <meta property="og:description"
@@ -21,4 +21,4 @@
         {% block metadata %}{% endblock %}</head><body><a class="skip-link" href="#main-content">Skip to content</a><header class="app-header"><div class="header-inner"><a class="wordmark" href="/">timerrr<span>.</span></a><nav class="public-nav"
      aria-label="Main navigation"
      style="margin-left:auto"><a class="nav-secondary" href="/guides/parallel-time">Calculator</a><a href="/guides/mcp">MCP guide</a><a href="/login">Log in</a><a class="btn btn-primary" href="/register">Start tracking</a></nav></div></header>
-        <main id="main-content">{% block content %}{% endblock %}</main><footer class="app-footer"><span>Timerrr · Time, accounted for.</span><a href="/guides/agent-timekeeping">How time is counted</a><a href="/guides/mcp">MCP documentation</a></footer></body></html>
+        <main id="main-content">{% block content %}{% endblock %}</main><footer class="app-footer"><span>Timerrr</span><a href="/guides/agent-timekeeping">Time accounting</a><a href="/guides/mcp">MCP setup</a></footer></body></html>

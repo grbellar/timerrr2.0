@@ -884,3 +884,22 @@ dialog::backdrop {
         font-size: 12px;
     }
 }
+
+.agent-setup-banner {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-top: 24px;
+    padding: 13px 16px;
+    border: 1px solid #d6e4bd;
+    border-radius: 4px;
+    background: #edf4de;
+    color: var(--green);
+    text-align: left;
+}
+.agent-setup-banner:hover { background: #e3edce; }
+.agent-setup-banner .mono { font-size: 12px; text-align: right; }
+#setup-copy-fallback { margin-top: 12px; }
+#setup-prompt-text { display: block; width: 100%; margin-top: 8px; font-family: var(--mono); font-size: 12px; }

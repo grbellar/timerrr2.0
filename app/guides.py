@@ -1,6 +1,6 @@
 """Public, server-rendered product explanations and a functional calculator."""
 
-from flask import Blueprint, abort, render_template
+from flask import Blueprint, abort, current_app, render_template, send_from_directory
 
 guides = Blueprint("guides", __name__)
 PAGES = {
@@ -26,4 +26,11 @@ def guide(slug):
     title, description = PAGES[slug]
     return render_template(
         "guide.html", slug=slug, page_title=title, description=description
+    )
+
+
+@guides.get("/agent-setup/prompt.md")
+def agent_setup_prompt():
+    return send_from_directory(
+        current_app.static_folder, "agent-setup/prompt.md", mimetype="text/markdown"
     )

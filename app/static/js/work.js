@@ -59,6 +59,11 @@
             if (button) button.disabled = false;
         }
     }
+    function shortWarning(text) {
+        if (text.startsWith('No human effort')) return 'No human time recorded.';
+        if (text.startsWith('An agent disconnected')) return 'Agent disconnected. Time capped at its last lease.';
+        return text;
+    }
     const metric = (label, value) => `<div class="metric"><dt>${label}</dt><dd>${duration(value)}</dd></div>`;
 
     function renderWork() {
@@ -69,10 +74,10 @@
             return `<article class="panel work-card" id="work-${w.id}"><div class="panel-head"><div><span class="eyebrow">${escape(w.client_name)} / #${w.id}</span><h3>${escape(w.title)}</h3></div><span class="badge ${w.finished_at?'':'active'}">${w.approved_at?'Reviewed':w.finished_at?'Finished':'Open'}</span></div>
             <dl class="metrics">${metric('Elapsed',w.elapsed_seconds)}${metric('Human effort',w.human_seconds)}${metric('Agent total',w.agent_seconds)}${metric('Waiting',w.waiting_seconds)}</dl>
             <p class="quiet mono">Agent budget ${w.finished_at?'unused':'remaining'} ${duration(w.budget_remaining_seconds)} · ${w.spans.filter(s=>!s.ended_at&&s.actor_kind==='agent').length} agents active</p>
-            ${w.warnings.map(t=>`<p class="notice">${escape(t)}</p>`).join('')}
+            ${w.warnings.map(t=>`<p class="notice">${escape(shortWarning(t))}</p>`).join('')}
             ${!w.finished_at?`<div class="action-row"><button class="btn" data-work="${w.id}" data-action="human" data-active="${human}">${human?'Pause my work':'Resume my work'}</button><button class="btn" data-work="${w.id}" data-action="waiting" data-active="${waiting}">${waiting?'Stop waiting':'Track waiting'}</button><button class="btn" data-work="${w.id}" data-action="evidence">Add evidence</button><button class="btn btn-primary" data-work="${w.id}" data-action="finish">Finish session</button></div>`:''}
-            <details data-receipt="${w.id}" ${open.has(String(w.id))?'open':''}><summary>Receipt · actors, events, and evidence</summary><ul class="receipt-events">${w.spans.map(s=>`<li><span class="badge">${escape(s.actor_kind)}</span> ${escape(s.actor_id)} · <span class="mono">${duration(s.seconds)}</span> <span class="quiet">${escape(s.stop_reason||'active')}</span></li>`).join('')}</ul><ol class="receipt-events">${w.events.map(e=>`<li><time>${escape(new Date(e.at).toLocaleString())}</time> · ${escape(e.kind.replaceAll('_',' '))}<div class="quiet">${escape(e.actor_id||'')} · ${escape(e.source)}</div><div>${escape(e.data.text||e.data.summary||'')}</div>${e.data.url?`<a href="${escape(e.data.url)}" target="_blank" rel="noopener noreferrer">${escape(e.data.url)}</a>`:''}</li>`).join('')}</ol><button class="btn" data-action="download" data-work="${w.id}">Download receipt JSON</button></details></article>`;
-        }).join('') : '<div class="panel empty-state">No work sessions yet. Start your first session above or connect an agent.</div>';
+            <details data-receipt="${w.id}" ${open.has(String(w.id))?'open':''}><summary>Receipt</summary><ul class="receipt-events">${w.spans.map(s=>`<li><span class="badge">${escape(s.actor_kind)}</span> ${escape(s.actor_id)} · <span class="mono">${duration(s.seconds)}</span> <span class="quiet">${escape(s.stop_reason||'active')}</span></li>`).join('')}</ul><ol class="receipt-events">${w.events.map(e=>`<li><time>${escape(new Date(e.at).toLocaleString())}</time> · ${escape(e.kind.replaceAll('_',' '))}<div class="quiet">${escape(e.actor_id||'')} · ${escape(e.source)}</div><div>${escape(e.data.text||e.data.summary||'')}</div>${e.data.url?`<a href="${escape(e.data.url)}" target="_blank" rel="noopener noreferrer">${escape(e.data.url)}</a>`:''}</li>`).join('')}</ol><button class="btn" data-action="download" data-work="${w.id}">Download JSON</button></details></article>`;
+        }).join('') : '<div class="panel empty-state">No sessions yet.</div>';
         $('more-work').classList.toggle('hidden', !nextBefore);
     }
     async function loadWork(older = false) {
@@ -162,7 +167,7 @@
         dialog.id = 'evidence-dialog';
         dialog.className = 'panel';
         dialog.style.maxWidth = '500px';
-        dialog.innerHTML = '<form class="form-grid"><h2 class="form-wide">Add evidence</h2><label class="form-wide">Note<textarea name="text" required maxlength="4000" rows="3"></textarea></label><label class="form-wide">Artifact URL · optional<input name="url" type="url" maxlength="2000" placeholder="https://…"></label><div class="action-row form-wide"><button class="btn btn-primary">Save evidence</button><button class="btn" type="button" id="cancel-evidence">Cancel</button></div><p class="quiet form-wide" role="alert" id="evidence-error"></p></form>';
+        dialog.innerHTML = '<form class="form-grid"><h2 class="form-wide">Add evidence</h2><label class="form-wide">Note<textarea name="text" required maxlength="4000" rows="3"></textarea></label><label class="form-wide">Link · optional<input name="url" type="url" maxlength="2000" placeholder="https://…"></label><div class="action-row form-wide"><button class="btn btn-primary">Save evidence</button><button class="btn" type="button" id="cancel-evidence">Cancel</button></div><p class="quiet form-wide" role="alert" id="evidence-error"></p></form>';
         document.body.append(dialog);
         dialog.showModal();
         dialog.querySelector('#cancel-evidence').onclick = () => dialog.close();
@@ -237,8 +242,8 @@
 
     function renderDraft(d) {
         const section = $('draft-review');
-        section.innerHTML = `<hr class="section-divider"><h2>Draft #${d.id}${d.approved_at?' · reviewed':''}</h2>${d.limitations.map(x=>`<p class="quiet">${escape(x)}</p>`).join('')}<p class="quiet">${d.receipts.length} sessions · ${d.rows.length} proposed human intervals. Times below use your local timezone.</p>${d.receipts.map(r=>`<p class="quiet"><a href="#work-${r.id}">Receipt #${r.id}</a> · ${escape(r.title)}${r.warnings.length?' — '+escape(r.warnings.join(' ')):''}</p>`).join('')}
-        ${d.approved_at?`<p class="notice">${d.approval.rows.length} time entries created. <a href="/entries">View entries →</a></p>`:`<form id="approve-form">${d.rows.map(r=>`<div class="draft-row" data-row="${r.row_id}"><input type="checkbox" name="include" checked aria-label="Include interval for ${escape(r.notes)}"><div><span class="quiet">Receipt #${r.work_id}</span><div class="form-grid"><label>Start<input name="start" type="datetime-local" step="0.001" required value="${localValue(r.start_time)}"></label><label>End<input name="end" type="datetime-local" step="0.001" required value="${localValue(r.end_time)}"></label><label class="form-wide">Entry notes<input name="notes" maxlength="4000" value="${escape(r.notes)}"></label></div></div></div>`).join('')}<p class="quiet">Unchecked intervals are excluded. Reviewing closes all sessions in this draft to further conversion.</p><div class="action-row"><button class="btn btn-primary" ${d.receipts.length?'':'disabled'}>Approve reviewed intervals</button></div></form>`}`;
+        section.innerHTML = `<hr class="section-divider"><h2>Draft #${d.id}${d.approved_at?' · reviewed':''}</h2><details><summary>Draft rules</summary>${d.limitations.map(x=>`<p class="quiet">${escape(x)}</p>`).join('')}</details><p class="quiet">${d.receipts.length} sessions · ${d.rows.length} human intervals · local time</p>${d.receipts.map(r=>`<p class="quiet"><a href="#work-${r.id}">Receipt #${r.id}</a> · ${escape(r.title)}${r.warnings.length?' — '+escape(r.warnings.map(shortWarning).join(' ')):''}</p>`).join('')}
+        ${d.approved_at?`<p class="notice">${d.approval.rows.length} time entries created. <a href="/entries">View entries →</a></p>`:`<form id="approve-form">${d.rows.map(r=>`<div class="draft-row" data-row="${r.row_id}"><input type="checkbox" name="include" checked aria-label="Include interval for ${escape(r.notes)}"><div><span class="quiet">Receipt #${r.work_id}</span><div class="form-grid"><label>Start<input name="start" type="datetime-local" step="0.001" required value="${localValue(r.start_time)}"></label><label>End<input name="end" type="datetime-local" step="0.001" required value="${localValue(r.end_time)}"></label><label class="form-wide">Entry notes<input name="notes" maxlength="4000" value="${escape(r.notes)}"></label></div></div></div>`).join('')}<p class="quiet">Only checked intervals are added. All sessions in this draft are marked reviewed.</p><div class="action-row"><button class="btn btn-primary" ${d.receipts.length?'':'disabled'}>Approve reviewed intervals</button></div></form>`}`;
         section.querySelectorAll('input[type=datetime-local]').forEach(input => input.dataset.initialValue = input.value);
         $('approve-form')?.addEventListener('submit', e => {
             e.preventDefault();
